@@ -1,0 +1,30 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "Build Full Vulkan Project",
+            "command": "C:\\msys64\\ucrt64\\bin\\g++.exe", // Use g++, not gcc
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${fileDirname}\\*.cpp", // Grab all .cpp files
+                "-o",
+                "${fileDirname}\\main.exe",
+                "-lglfw3",
+                "-lvulkan-1"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Compiler: C:/msys64/ucrt64/bin/g++.exe"
+        }
+    ]
+}
