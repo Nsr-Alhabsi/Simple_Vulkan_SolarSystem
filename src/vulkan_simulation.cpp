@@ -62,47 +62,17 @@ void Simulation::run() {
   }
 }
 
-void Simulation::createCircleVertices(
-  std::vector<LvsModel::Vertex> &vertices,
-  int Smoothness,
-  float radius,
-  const glm::vec3 &centerColor = glm::vec3{1.f},
-  const glm::vec3 &edgeColor = glm::vec3{1.f}
-) 
-{
-  vertices.clear();
-  vertices.reserve(Smoothness * 3);
-
-  const float angleStep = glm::two_pi<float>() / Smoothness;
-
-  for (int i = 0; i < Smoothness; i++) {
-    float a1 = i * angleStep, a2 = (i + 1) * angleStep;
-
-    vertices.push_back({{0.f, 0.f}, centerColor});
-    vertices.push_back({{radius * cos(a1), radius * sin(a1)}, edgeColor});
-    vertices.push_back({{radius * cos(a2), radius * sin(a2)}, edgeColor});
-  }
-}
-
 void Simulation::loadGameObjects() {
-  float sunSize = .115f;
-
-  std::vector<LvsModel::Vertex> vertices;
-  createCircleVertices(vertices, 60, sunSize, {.86f, .3f, .004f}, {1.f, .647f, .0f});
-
-  auto lvsModel = std::make_shared<LvsModel>(lvsDevice, vertices);
-  auto circle = LvsGameObject::createGameObject();
-  circle.model = lvsModel;
+  auto circle = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
+  circle.transform2D.scale /= 2;
   circle.isGradient = true;
 
   gameObjects.push_back(std::move(circle));
 
-  createCircleVertices(vertices, 60, sunSize / 5);
 
-  lvsModel = std::make_shared<LvsModel>(lvsDevice, vertices);
-  circle = LvsGameObject::createGameObject();
-  circle.model = lvsModel;
-  circle.transform2D.translation.x = sunSize + .3f;
+  circle = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
+  circle.transform2D.scale /= 5;
+  circle.transform2D.translation.x = .3f;
   circle.color = {.25f, .25f, .25f};
 
   LvsGameAnimations::AnimationProperties circleAnimationProperties{};
@@ -122,11 +92,8 @@ void Simulation::loadGameObjects() {
 
   g_AnimationManager.setAnimation(circleAnimationProperties);
 
-  createCircleVertices(vertices, 60, sunSize / 7);
-  lvsModel = std::make_shared<LvsModel>(lvsDevice, vertices);
-  auto moon = LvsGameObject::createGameObject();
-  moon.model = lvsModel;
-  moon.transform2D.translation.x = sunSize + .4f;
+  auto moon = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
+  moon.transform2D.translation.x = .4f;
   moon.color = {0.5f, 0.5f, 0.5f};
 
   LvsGameAnimations::AnimationProperties moonAnimationProperties{};

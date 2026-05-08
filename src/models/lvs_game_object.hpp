@@ -27,34 +27,11 @@ struct Transform2DComponent {
   }
 };
 
-struct ObjectType {
-  union {
-    struct {
-      float radius{1.f};
-      float displayRadianRadius{glm::two_pi<float>()};
-      int smoothness{60};
-    } Circle;
-
-    struct {
-      float height{1.f};
-      float width{1.f};
-      float lean{0.f};
-    } Triangle;
-
-    struct {
-      float height{1.f};
-      float width{1.f};
-      float skew{0.f};
-    } Square;
-  };
-};
-
-
 class LvsGameObject {
 public:
   using id_t = unsigned int;
 
-  static LvsGameObject createGameObject(ObjectType typeOfObject);
+  static LvsGameObject createGameObject(int typeOfObject, LvsDevice& device);
 
   LvsGameObject(const LvsGameObject &) = delete;
   LvsGameObject &operator=(const LvsGameObject &) = delete;
@@ -69,7 +46,7 @@ public:
 
   Transform2DComponent transform2D{};
   private:
-  std::vector<LvsModel::Vertex> createObjectVertices(ObjectType typeOfObject);
+  static std::vector<LvsModel::Vertex> createObjectVertices(int typeOfObject);
   LvsGameObject(id_t objId) : id{objId} {}
   id_t id;
 };
