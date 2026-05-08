@@ -3,6 +3,10 @@
 #include "lvs_model.hpp"
 #include "lvs_game_animations.hpp"
 
+// libs:
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtc/constants.hpp>
+
 //std:
 #include <memory>
 
@@ -23,15 +27,34 @@ struct Transform2DComponent {
   }
 };
 
+struct ObjectType {
+  union {
+    struct {
+      float radius{1.f};
+      float displayRadianRadius{glm::two_pi<float>()};
+      int smoothness{60};
+    } Circle;
+
+    struct {
+      float height{1.f};
+      float width{1.f};
+      float lean{0.f};
+    } Triangle;
+
+    struct {
+      float height{1.f};
+      float width{1.f};
+      float skew{0.f};
+    } Square;
+  };
+};
+
+
 class LvsGameObject {
 public:
   using id_t = unsigned int;
 
-  static LvsGameObject createGameObject() {
-    static id_t currentId = 0;
-
-    return LvsGameObject{currentId++};
-  }
+  static LvsGameObject createGameObject(ObjectType typeOfObject);
 
   LvsGameObject(const LvsGameObject &) = delete;
   LvsGameObject &operator=(const LvsGameObject &) = delete;
@@ -46,6 +69,7 @@ public:
 
   Transform2DComponent transform2D{};
   private:
+  std::vector<LvsModel::Vertex> createObjectVertices(ObjectType typeOfObject);
   LvsGameObject(id_t objId) : id{objId} {}
   id_t id;
 };

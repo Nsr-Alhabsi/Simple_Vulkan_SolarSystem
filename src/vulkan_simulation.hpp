@@ -6,6 +6,7 @@
 #include "models/lvs_game_animations.hpp"
 
 #include <nlohmann/json.hpp>
+#include <glm/gtc/constants.hpp>
 
 #include <chrono>
 #include <memory>
