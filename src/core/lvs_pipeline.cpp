@@ -85,6 +85,9 @@ void LvsPipeline::createGraphicsPipeline(
   vertexInputInfo.pVertexAttributeDescriptions          = configInfo.attributeDescriptions.data();
   vertexInputInfo.pVertexBindingDescriptions            = configInfo.bindingDescriptions.data();
 
+  VkPipelineDynamicStateCreateInfo dynamicStateInfo = configInfo.dynamicStateInfo;
+  dynamicStateInfo.pNext = nullptr;
+
   VkGraphicsPipelineCreateInfo pipelineInfo{};
   pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
   pipelineInfo.stageCount          = 2;
@@ -96,7 +99,7 @@ void LvsPipeline::createGraphicsPipeline(
   pipelineInfo.pMultisampleState   = &configInfo.multisampleInfo;
   pipelineInfo.pColorBlendState    = &configInfo.colorBlendInfo;
   pipelineInfo.pDepthStencilState  = &configInfo.depthStencilInfo;
-  pipelineInfo.pDynamicState       = &configInfo.dynamicStateInfo;
+  pipelineInfo.pDynamicState       = &dynamicStateInfo;
 
   pipelineInfo.layout              = configInfo.pipelineLayout;
   pipelineInfo.renderPass          = configInfo.renderPass;
@@ -188,6 +191,7 @@ void LvsPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
   configInfo.dynamicStateInfo.pDynamicStates           = configInfo.dynamicStatEnables.data();
   configInfo.dynamicStateInfo.dynamicStateCount        = static_cast<uint32_t>(configInfo.dynamicStatEnables.size());
   configInfo.dynamicStateInfo.flags                    = 0;
+  configInfo.dynamicStateInfo.pNext                    = nullptr;
 
   configInfo.bindingDescriptions                       = LvsModel::Vertex::getBindingDescriptions();
   configInfo.attributeDescriptions                     = LvsModel::Vertex::getAttributeDescriptions();
