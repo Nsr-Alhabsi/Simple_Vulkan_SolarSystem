@@ -13,9 +13,12 @@
 
 struct simplePushConstantData {
   glm::mat2 transform{1.f};
-  alignas(8) glm::vec2 offset;
+  glm::vec2 offset;
   alignas(16) glm::vec3 color;
+  alignas(16) glm::vec3 color2;
+  glm::vec2 gradDir;
   bool useGradient;
+  float _padding;
 };
 
 namespace lvs { // lvs stands for large - vulkan - simulation
@@ -69,6 +72,8 @@ void SimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer, std::v
     simplePushConstantData push{};
     push.offset = obj.transform2D.translation;
     push.color = obj.color;
+    push.color2 = obj.color2;
+    push.gradDir = obj.gradDir;
     push.transform = obj.transform2D.mat2();
     push.useGradient = obj.isGradient;
 

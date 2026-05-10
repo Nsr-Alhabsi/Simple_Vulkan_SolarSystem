@@ -6,13 +6,18 @@ layout(location = 0) out vec4 outColor;
 layout(push_constant) uniform Push {
   mat2 transform;
   vec2 offset;
-  vec3 color;
+  vec3 color1;
+  vec3 color2;
+  vec2 gradDir;
   bool useGradient;
 } push;
 
 void main() {
   if (push.useGradient) {
-    outColor = vec4(fragColor, 1.0);
+    float t = dot(fragUV, normalize(push.gradDir));
+    t = clamp(t + 0.5, 0.0, 1.0);
+
+    outColor = vec4(mix(push.color1, push.color2, t), 1.0);
   } else {
     outColor = vec4(push.color, 1.0);
   }

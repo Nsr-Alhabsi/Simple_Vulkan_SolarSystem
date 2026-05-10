@@ -42,6 +42,8 @@ public:
 
   std::shared_ptr<LvsModel> model{};
   glm::vec3 color{}; // This will only work if isGradient is false
+  glm::vec3 color2{};
+  glm::vec2 gradDir{};
   bool isGradient{false};
 
   Transform2DComponent transform2D{};
