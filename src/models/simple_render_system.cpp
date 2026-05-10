@@ -14,10 +14,12 @@
 struct simplePushConstantData {
   glm::mat2 transform{1.f};
   glm::vec2 offset;
-  alignas(16) glm::vec3 color;
+  float _padding1[2];
+
+  alignas(16) glm::vec3 color1;
   alignas(16) glm::vec3 color2;
   glm::vec2 gradDir;
-  bool useGradient;
+  int useGradient;
   float _padding;
 };
 
@@ -69,13 +71,15 @@ void SimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer, std::v
 
   g_AnimationManager.updateAnimations(gameObjects);
   for (auto& obj: gameObjects) {
+    if (obj.model == nullptr) continue;
+
     simplePushConstantData push{};
     push.offset = obj.transform2D.translation;
-    push.color = obj.color;
+    push.color1 = obj.color;
     push.color2 = obj.color2;
     push.gradDir = obj.gradDir;
     push.transform = obj.transform2D.mat2();
-    push.useGradient = obj.isGradient;
+    push.useGradient = obj.isGradient ? 1 : 0;
 
     vkCmdPushConstants(commandBuffer, pipelineLayout,
       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
