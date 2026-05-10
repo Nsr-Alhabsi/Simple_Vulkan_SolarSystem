@@ -39,6 +39,8 @@ public:
     VkPipelineColorBlendStateCreateInfo colorBlendInfo;
     VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
     std::vector<VkDynamicState> dynamicStatEnables;
+    std::vector<VkVertexInputBindingDescription> bindingDescriptions;
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
     VkPipelineDynamicStateCreateInfo dynamicStateInfo;
     VkPipelineLayout pipelineLayout = nullptr;
     VkRenderPass renderPass = nullptr;

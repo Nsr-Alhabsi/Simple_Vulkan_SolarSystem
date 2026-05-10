@@ -78,14 +78,12 @@ void LvsPipeline::createGraphicsPipeline(
   shaderStages[1].pNext               = nullptr;
   shaderStages[1].pSpecializationInfo = nullptr;
 
-  auto bindingDescriptions = LvsModel::Vertex::getBindingDescriptions();
-  auto attributeDescriptions = LvsModel::Vertex::getAttributeDescriptions();
   VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
   vertexInputInfo.sType                                 = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-  vertexInputInfo.vertexAttributeDescriptionCount       = static_cast<uint32_t>(attributeDescriptions.size());
-  vertexInputInfo.vertexBindingDescriptionCount         = static_cast<uint32_t>(bindingDescriptions.size());
-  vertexInputInfo.pVertexAttributeDescriptions          = attributeDescriptions.data();
-  vertexInputInfo.pVertexBindingDescriptions            = bindingDescriptions.data();
+  vertexInputInfo.vertexAttributeDescriptionCount       = static_cast<uint32_t>(configInfo.attributeDescriptions.size());
+  vertexInputInfo.vertexBindingDescriptionCount         = static_cast<uint32_t>(configInfo.bindingDescriptions.size());
+  vertexInputInfo.pVertexAttributeDescriptions          = configInfo.attributeDescriptions.data();
+  vertexInputInfo.pVertexBindingDescriptions            = configInfo.bindingDescriptions.data();
 
   VkGraphicsPipelineCreateInfo pipelineInfo{};
   pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -152,8 +150,8 @@ void LvsPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
   configInfo.rasterizationInfo.depthBiasClamp          = 0.0f; // Optional
   configInfo.rasterizationInfo.depthBiasSlopeFactor    = 0.0f; // Optional
 
-  configInfo.multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-  configInfo.multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+  configInfo.multisampleInfo.sType                     = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+  configInfo.multisampleInfo.rasterizationSamples      = VK_SAMPLE_COUNT_1_BIT;
 
   configInfo.colorBlendAttachment.colorWriteMask       = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
   configInfo.colorBlendAttachment.blendEnable          = VK_FALSE;
@@ -185,11 +183,14 @@ void LvsPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
   configInfo.depthStencilInfo.front                    = {}; // Optional
   configInfo.depthStencilInfo.back                     = {}; // Optional
   
-  configInfo.dynamicStatEnables = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
-  configInfo.dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-  configInfo.dynamicStateInfo.pDynamicStates = configInfo.dynamicStatEnables.data();
-  configInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configInfo.dynamicStatEnables.size());
-  configInfo.dynamicStateInfo.flags = 0;
+  configInfo.dynamicStatEnables                        = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+  configInfo.dynamicStateInfo.sType                    = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+  configInfo.dynamicStateInfo.pDynamicStates           = configInfo.dynamicStatEnables.data();
+  configInfo.dynamicStateInfo.dynamicStateCount        = static_cast<uint32_t>(configInfo.dynamicStatEnables.size());
+  configInfo.dynamicStateInfo.flags                    = 0;
+
+  configInfo.bindingDescriptions                       = LvsModel::Vertex::getBindingDescriptions();
+  configInfo.attributeDescriptions                     = LvsModel::Vertex::getAttributeDescriptions();
   std::cout << cpc::Green << "Successfully created the Pipeline config info" << cpc::Reset << std::endl; 
 }
 

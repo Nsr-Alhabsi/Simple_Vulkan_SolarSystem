@@ -18,6 +18,7 @@ struct simplePushConstantData {
 
   alignas(16) glm::vec3 color1;
   alignas(16) glm::vec3 color2;
+  
   glm::vec2 gradDir;
   int useGradient;
   float _padding;

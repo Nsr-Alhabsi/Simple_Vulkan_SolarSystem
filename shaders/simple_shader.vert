@@ -11,10 +11,10 @@ layout(push_constant) uniform Push {
   mat2 transform;
   vec2 offset;
 
-  layout(offset = 16) vec3 color1;
-  layout(offset = 32) vec3 color2;
-  layout(offset = 48) vec2 gradDir;
-  layout(offset = 56) bool useGradient;
+  layout(offset = 32) vec3 color1;
+  layout(offset = 48) vec3 color2;
+  layout(offset = 64) vec2 gradDir;
+  layout(offset = 72) int useGradient;
 } push;
 
 void main() {
