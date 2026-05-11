@@ -62,7 +62,7 @@ private:
   LvsDevice lvsDevice{lvsWindow};
   LvsRenderer lvsRenderer{lvsWindow, lvsDevice};
 
-  std::vector<LvsGameObject> gameObjects;
+  std::unordered_map<LvsGameObject::id_t, LvsGameObject> gameObjects;
 };
 
 }

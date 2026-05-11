@@ -21,7 +21,7 @@ public:
   SimpleRenderSystem(const SimpleRenderSystem &) = delete;
   SimpleRenderSystem& operator=(const SimpleRenderSystem &) = delete;
 
-  void renderGameObjects(VkCommandBuffer commandBuffer, std::vector<LvsGameObject>& gameObjects);
+  void renderGameObjects(VkCommandBuffer commandBuffer, std::unordered_map<LvsGameObject::id_t, LvsGameObject>& gameObjects);
 private:
   void createPipelineLayout();
   void createPipeline(VkRenderPass renderPass);

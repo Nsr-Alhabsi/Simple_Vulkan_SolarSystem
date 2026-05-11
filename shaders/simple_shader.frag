@@ -6,7 +6,7 @@ layout(location = 1) in vec2 fragUV;
 layout(location = 0) out vec4 outColor;
 
 layout(push_constant) uniform Push {
-    mat2 transform;
+    mat3 transform;
     vec2 offset;
 
     layout(offset = 32) vec3 color1;

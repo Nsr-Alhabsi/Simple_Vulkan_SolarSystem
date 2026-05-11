@@ -9,6 +9,7 @@
 
 //std:
 #include <memory>
+#include <unordered_map>
 
 namespace lvs {
 
@@ -17,13 +18,15 @@ struct Transform2DComponent {
   glm::vec2 scale{1.f, 1.f};
   float rotation;
 
-  glm::mat2 mat2() {
-    const float s = glm::sin(rotation);
-    const float c = glm::cos(rotation);
-    glm::mat2 rotMatrix{{c, s}, {-s, c}};
+  glm::mat3 mat3() {
+    const float c = cos(rotation);
+    const float s = sin(rotation);
 
-    glm::mat2 scaleMat{{scale.x, .0f}, {.0f, scale.y}};
-    return rotMatrix * scaleMat;
+    return glm::mat3 {
+      {scale.x * c, scale.x * s, 0.0f},
+      {scale.y * -s, scale.y * c, 0.0f},
+      {translation.x, translation.y, 1.0f}
+    };
   }
 };
 
@@ -33,6 +36,8 @@ public:
 
   static LvsGameObject createGameObject(int typeOfObject, LvsDevice& device);
 
+  glm::mat3 getGlobalMatrix(std::unordered_map<unsigned int, LvsGameObject>& objectList);
+
   LvsGameObject(const LvsGameObject &) = delete;
   LvsGameObject &operator=(const LvsGameObject &) = delete;
   LvsGameObject(LvsGameObject&&) = default;
@@ -41,12 +46,13 @@ public:
   id_t getId() {return id;}
 
   std::shared_ptr<LvsModel> model{};
-  glm::vec3 color{}; // This will only work if isGradient is false
-  glm::vec3 color2{};
+  glm::vec3 color{}; 
+  glm::vec3 color2{}; // This will only work if isGradient is true
   glm::vec2 gradDir{};
   bool isGradient{false};
 
-  LvsGameObject* parent = nullptr;
+  id_t parentId = 0;
+  bool hasParent = false;
 
   Transform2DComponent transform2D{};
   private:

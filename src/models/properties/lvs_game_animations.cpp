@@ -51,8 +51,8 @@ LvsGameObject* LvsGameAnimations::getGameObject(int targetID) {
   if (!GAME_OBJECTS) throw std::runtime_error("INVALID OBJECT: No objects inside of object list");
   LvsGameObject* target = nullptr;
   for (auto& obj : *GAME_OBJECTS) {
-    if (obj.getId() == targetID) {
-      target = &obj;
+    if (obj.second.getId() == targetID) {
+      target = &obj.second;
       break;
     }
   }
@@ -503,7 +503,7 @@ bool LvsGameAnimations::checkAnimationState(int animationID)  {
  * 2- It will check if the animation is finished if it is it will wait 1 frame before destroying the animationProperty
  * 3- if not delayed or finished it will continue onto playing the animation and ANIMATION_STATE will be set to ANIMATION_STATE_PLAYING
  */
-void LvsGameAnimations::updateAnimations(std::vector<LvsGameObject>& world) {
+void LvsGameAnimations::updateAnimations(std::unordered_map<LvsGameObject::id_t, LvsGameObject>& world) {
   GAME_OBJECTS = &world;
 
   for (int idx : ANIMATION_SOA_VECTOR_ANIMATION_ACTIVE_INDICES) {

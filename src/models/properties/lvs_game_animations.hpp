@@ -12,6 +12,8 @@ namespace lvs {
 
 class LvsGameObject;
 
+using id_t = unsigned int;
+
 class LvsGameAnimations {
 public:
   enum AnimationType { ANIMATION_TYPE_ROTATION, ANIMATION_TYPE_TRANSLATION, ANIMATION_TYPE_SCALE };
@@ -82,7 +84,7 @@ public:
   LvsGameAnimations& operator=(const LvsGameAnimations &) = delete;
 
   int setAnimation(AnimationProperties &animationProperties);
-  void updateAnimations(std::vector<LvsGameObject>& world);
+  void updateAnimations(std::unordered_map<id_t, LvsGameObject>& world);
   void pauseAnimation(int animationID);
   void continueAnimation(int animationID);
   AnimationProperties getAnimationInformation(int animationID);
@@ -234,7 +236,7 @@ private:
   std::vector<int> ANIMATION_SOA_VECTOR_ANIMATION_ACTIVE_INDICES;
   std::vector<int> ANIMATION_SOA_VECTOR_ANIMATION_FREE_SLOTS;
 
-  std::vector<LvsGameObject>* GAME_OBJECTS;
+  std::unordered_map<id_t ,LvsGameObject>* GAME_OBJECTS;
 
   void setRotationAnimation(int animationID);
   void setTranslationAnimation(int animationID);

@@ -12,7 +12,7 @@
 #include <stdexcept>
 
 struct simplePushConstantData {
-  glm::mat2 transform{1.f};
+  glm::mat3 transform{1.f};
   glm::vec2 offset;
   float _padding1[2];
 
@@ -67,11 +67,15 @@ void SimpleRenderSystem::createPipeline(VkRenderPass renderPass) {
     pipelineConfig);
 }
 
-void SimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer, std::vector<LvsGameObject> &gameObjects) {
+void SimpleRenderSystem::renderGameObjects(
+  VkCommandBuffer commandBuffer,
+  std::unordered_map<unsigned int, LvsGameObject> &gameObjects) 
+  {  
   lvsPipeline->bind(commandBuffer);
 
   g_AnimationManager.updateAnimations(gameObjects);
-  for (auto& obj: gameObjects) {
+  for (auto& kv: gameObjects) {
+    auto& obj = kv.second;
     if (obj.model == nullptr) continue;
 
     simplePushConstantData push{};
@@ -79,7 +83,9 @@ void SimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer, std::v
     push.color1 = obj.color;
     push.color2 = obj.color2;
     push.gradDir = obj.gradDir;
-    push.transform = obj.transform2D.mat2();
+
+    push.transform = obj.getGlobalMatrix(gameObjects);
+    
     push.useGradient = obj.isGradient ? 1 : 0;
 
     vkCmdPushConstants(commandBuffer, pipelineLayout,

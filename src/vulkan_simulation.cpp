@@ -70,8 +70,8 @@ void Simulation::loadGameObjects() {
   circle.gradDir = {0.f, 1.f};
   circle.isGradient = true;
 
-  gameObjects.push_back(std::move(circle));
-  
+  gameObjects.emplace(circle.getId(), std::move(circle));
+
   circle = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
   circle.transform2D.scale /= 20;
   circle.transform2D.translation.x = .5f;
@@ -111,8 +111,8 @@ void Simulation::loadGameObjects() {
 
   g_AnimationManager.setAnimation(moonAnimationProperties);
 
-  gameObjects.push_back(std::move(circle));
-  gameObjects.push_back(std::move(moon));
+  gameObjects.emplace(circle.getId(), std::move(circle));
+  gameObjects.emplace(moon.getId(), std::move(moon));
 }
 
 }
