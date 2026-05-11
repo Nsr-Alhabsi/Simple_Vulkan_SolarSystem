@@ -74,7 +74,7 @@ void Simulation::loadGameObjects() {
 
 
   circle = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
-  circle.transform2D.scale /= 7;
+  circle.transform2D.scale /= 20;
   circle.transform2D.translation.x = .5f;
   circle.color = {.25f, .25f, .25f};
 
@@ -90,13 +90,13 @@ void Simulation::loadGameObjects() {
   );
   circleAnimationProperties.ANIMATION_TYPE_ROTATION.ANIMATION_ENDING_RADIAN = glm::two_pi<float>();
 
-  circleAnimationProperties.ANIMATION_DURATION = 5.0f;
+  circleAnimationProperties.ANIMATION_DURATION = 2.f;
   circleAnimationProperties.ANIMATION_REPETITION = -1;
 
   g_AnimationManager.setAnimation(circleAnimationProperties);
 
   auto moon = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
-  moon.transform2D.scale /= 10;
+  moon.transform2D.scale /= 15;
   moon.color = {0.5f, 0.5f, 0.5f};
 
   LvsGameAnimations::AnimationProperties moonAnimationProperties{};
@@ -107,7 +107,7 @@ void Simulation::loadGameObjects() {
   moonAnimationProperties.ANIMATION_TYPE_ROTATION.RADIUS = 0.8f;
   moonAnimationProperties.ANIMATION_TYPE_ROTATION.ANIMATION_ENDING_RADIAN = glm::two_pi<float>();
 
-  moonAnimationProperties.ANIMATION_DURATION = 2.f;
+  moonAnimationProperties.ANIMATION_DURATION = 5.f;
   moonAnimationProperties.ANIMATION_REPETITION = -1;
 
   g_AnimationManager.setAnimation(moonAnimationProperties);
