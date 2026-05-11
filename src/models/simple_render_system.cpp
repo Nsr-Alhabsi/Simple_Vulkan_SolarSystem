@@ -80,7 +80,13 @@ void SimpleRenderSystem::renderGameObjects(
     push.color2 = obj.color2;
     push.gradDir = obj.gradDir;
 
-    push.transform = glm::mat4{obj.getGlobalMatrix(gameObjects)};
+    glm::mat3 m = obj.getGlobalMatrix(gameObjects);
+    push.transform = glm::mat4{
+        {m[0][0], m[0][1], 0.0f, 0.0f},
+        {m[1][0], m[1][1], 0.0f, 0.0f},
+        {0.0f,    0.0f,    1.0f, 0.0f},
+        {m[2][0], m[2][1], 0.0f, 1.0f}
+    };
     
     push.useGradient = obj.isGradient ? 1 : 0;
 

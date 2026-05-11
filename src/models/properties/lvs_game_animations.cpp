@@ -88,6 +88,7 @@ void LvsGameAnimations::setRotationAnimation(int animationID) {
 
   auto gameObject = getGameObject(ANIMATION_SOA_VECTOR_TARGET_ID[animationID]);
 
+  gameObject->transform2D.translation = {x, y};
   gameObject->transform2D.rotation = currentFrameRotation;
 }
 
