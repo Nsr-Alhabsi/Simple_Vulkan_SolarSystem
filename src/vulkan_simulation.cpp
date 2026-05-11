@@ -63,56 +63,57 @@ void Simulation::run() {
 }
 
 void Simulation::loadGameObjects() {
-  auto circle = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
-  circle.transform2D.scale /= 4;
-  circle.color = {1.f, .8f, 0.f};
-  circle.color2 = {1.f, .2f, .0f};
-  circle.gradDir = {0.f, 1.f};
-  circle.isGradient = true;
+  // SUN
+  auto sun = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
+  sun.transform2D.scale /= 4;
+  sun.color = {1.f, .8f, 0.f};
+  sun.color2 = {1.f, .2f, .0f};
+  sun.gradDir = {0.f, 1.f};
+  sun.isGradient = true;
+  id_t sunId = sun.getId();
+  gameObjects.emplace(sunId, std::move(sun));
 
-  gameObjects.emplace(circle.getId(), std::move(circle));
+  // PLANET
+  auto planet = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
+  planet.transform2D.scale /= 3;
+  planet.transform2D.translation.x = .5f;
+  planet.color = {.25f, .25f, .25f};
+  planet.hasParent = true;
+  planet.parentId = sunId;
+  id_t planetId = planet.getId();
 
-  circle = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
-  circle.transform2D.scale /= 20;
-  circle.transform2D.translation.x = .5f;
-  circle.color = {.25f, .25f, .25f};
+  LvsGameAnimations::AnimationProperties planetOrbit{};
+  planetOrbit.TARGET_ID = planetId;
+  planetOrbit.ANIMATION_NAME = "Planet_Orbit";
+  planetOrbit.TYPE = g_AnimationManager.ANIMATION_TYPE_ROTATION;
+  planetOrbit.ANIMATION_TYPE_ROTATION.PIVOT_POINT = {0.0f, 0.0f};
+  planetOrbit.ANIMATION_TYPE_ROTATION.RADIUS = 0.5f;
+  planetOrbit.ANIMATION_TYPE_ROTATION.ANIMATION_ENDING_RADIAN = glm::two_pi<float>();
+  planetOrbit.ANIMATION_DURATION = 2.f;
+  planetOrbit.ANIMATION_REPETITION = -1;
+  g_AnimationManager.setAnimation(planetOrbit);
 
-  LvsGameAnimations::AnimationProperties circleAnimationProperties{};
-  circleAnimationProperties.TARGET_ID = circle.getId();
-  circleAnimationProperties.ANIMATION_NAME = "Circle_Orbit_Animation";
-  circleAnimationProperties.TYPE = g_AnimationManager.ANIMATION_TYPE_ROTATION;
-
-  circleAnimationProperties.ANIMATION_TYPE_ROTATION.PIVOT_POINT = {0.0f, 0.0f};
-  circleAnimationProperties.ANIMATION_TYPE_ROTATION.RADIUS = glm::distance(
-    circleAnimationProperties.ANIMATION_TYPE_ROTATION.PIVOT_POINT,
-    circle.transform2D.translation
-  );
-  circleAnimationProperties.ANIMATION_TYPE_ROTATION.ANIMATION_ENDING_RADIAN = glm::two_pi<float>();
-
-  circleAnimationProperties.ANIMATION_DURATION = 2.f;
-  circleAnimationProperties.ANIMATION_REPETITION = -1;
-
-  g_AnimationManager.setAnimation(circleAnimationProperties);
-
+  // MOON
   auto moon = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
-  moon.transform2D.scale /= 15;
+  moon.transform2D.scale /= 2;
+  moon.transform2D.translation.x = 0.8f; // Offset from Planet
   moon.color = {0.5f, 0.5f, 0.5f};
+  moon.hasParent = true;
+  moon.parentId = planetId;
+  id_t moonId = moon.getId();
 
-  LvsGameAnimations::AnimationProperties moonAnimationProperties{};
-  moonAnimationProperties.TARGET_ID = moon.getId();
-  moonAnimationProperties.ANIMATION_NAME = "Moon_Orbit_Animation";
-  moonAnimationProperties.TYPE = g_AnimationManager.ANIMATION_TYPE_ROTATION;
+  LvsGameAnimations::AnimationProperties moonOrbit{};
+  moonOrbit.TARGET_ID = moonId;
+  moonOrbit.ANIMATION_NAME = "Moon_Orbit";
+  moonOrbit.TYPE = g_AnimationManager.ANIMATION_TYPE_ROTATION;
+  moonOrbit.ANIMATION_TYPE_ROTATION.RADIUS = 0.8f;
+  moonOrbit.ANIMATION_TYPE_ROTATION.ANIMATION_ENDING_RADIAN = glm::two_pi<float>();
+  moonOrbit.ANIMATION_DURATION = 5.f;
+  moonOrbit.ANIMATION_REPETITION = -1;
+  g_AnimationManager.setAnimation(moonOrbit);
 
-  moonAnimationProperties.ANIMATION_TYPE_ROTATION.RADIUS = 0.8f;
-  moonAnimationProperties.ANIMATION_TYPE_ROTATION.ANIMATION_ENDING_RADIAN = glm::two_pi<float>();
-
-  moonAnimationProperties.ANIMATION_DURATION = 5.f;
-  moonAnimationProperties.ANIMATION_REPETITION = -1;
-
-  g_AnimationManager.setAnimation(moonAnimationProperties);
-
-  gameObjects.emplace(circle.getId(), std::move(circle));
-  gameObjects.emplace(moon.getId(), std::move(moon));
+  gameObjects.emplace(planetId, std::move(planet));
+  gameObjects.emplace(moonId, std::move(moon));
 }
 
 }
