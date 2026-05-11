@@ -12,16 +12,13 @@
 #include <stdexcept>
 
 struct simplePushConstantData {
-  glm::mat3 transform{1.f};
-  glm::vec2 offset;
-  float _padding1[2];
+  glm::mat4 transform{1.f};
 
   alignas(16) glm::vec3 color1;
   alignas(16) glm::vec3 color2;
   
   alignas(8) glm::vec2 gradDir;
   alignas(4) int useGradient;
-  float _padding;
 };
 
 namespace lvs { // lvs stands for large - vulkan - simulation
@@ -79,12 +76,11 @@ void SimpleRenderSystem::renderGameObjects(
     if (obj.model == nullptr) continue;
 
     simplePushConstantData push{};
-    push.offset = obj.transform2D.translation;
     push.color1 = obj.color;
     push.color2 = obj.color2;
     push.gradDir = obj.gradDir;
 
-    push.transform = obj.getGlobalMatrix(gameObjects);
+    push.transform = glm::mat4{obj.getGlobalMatrix(gameObjects)};
     
     push.useGradient = obj.isGradient ? 1 : 0;
 

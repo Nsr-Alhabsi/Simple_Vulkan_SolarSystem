@@ -6,13 +6,12 @@ layout(location = 1) in vec2 fragUV;
 layout(location = 0) out vec4 outColor;
 
 layout(push_constant) uniform Push {
-    mat3 transform;
-    vec2 offset;
+    mat4 transform;
 
-    layout(offset = 32) vec3 color1;
-    layout(offset = 48) vec3 color2;
-    layout(offset = 64) vec2 gradDir;
-    layout(offset = 72) int useGradient;
+    layout(offset = 64) vec3 color1;
+    layout(offset = 80) vec3 color2;
+    layout(offset = 96) vec2 gradDir;
+    layout(offset = 104) int useGradient;
 } push;
 
 void main() {
