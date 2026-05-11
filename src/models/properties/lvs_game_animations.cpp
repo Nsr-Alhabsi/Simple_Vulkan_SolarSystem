@@ -1,7 +1,7 @@
 #include "lvs_game_animations.hpp"
-#include "lvs_game_object.hpp"
-#include "../vulkan_simulation.hpp"
-#include "../ADDONS/cp_color.hpp"
+#include "../lvs_game_object.hpp"
+#include "../../vulkan_simulation.hpp"
+#include "../../ADDONS/cp_color.hpp"
 
 // std:
 #include <iostream>

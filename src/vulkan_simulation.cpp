@@ -71,8 +71,7 @@ void Simulation::loadGameObjects() {
   circle.isGradient = true;
 
   gameObjects.push_back(std::move(circle));
-
-
+  
   circle = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
   circle.transform2D.scale /= 20;
   circle.transform2D.translation.x = .5f;

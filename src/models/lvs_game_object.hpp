@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lvs_model.hpp"
-#include "lvs_game_animations.hpp"
+#include "properties/lvs_game_animations.hpp"
 
 // libs:
 #define GLM_ENABLE_EXPERIMENTAL
@@ -45,6 +45,8 @@ public:
   glm::vec3 color2{};
   glm::vec2 gradDir{};
   bool isGradient{false};
+
+  LvsGameObject* parent = nullptr;
 
   Transform2DComponent transform2D{};
   private:

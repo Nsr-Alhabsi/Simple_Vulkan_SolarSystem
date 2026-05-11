@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lvs_game_object.hpp"
+#include "../lvs_game_object.hpp"
 
 // std:
 #include <variant>

@@ -101,4 +101,24 @@ LvsGameObject LvsGameObject::createGameObject(int typeOfObject, LvsDevice& devic
   return obj;
 }
 
+Transform2DComponent LvsGameObject::getGlobalMatrix() {
+  Transform2DComponent childLocal = transform2D;
+  LvsGameObject *currentParent = parent;
+
+  glm::mat2 accumulatedRotScale = transform2D.mat2();
+  glm::vec2 accumulatedPos = transform2D.translation;
+  
+  while (currentParent != nullptr) {
+    childLocal.scale *= currentParent->transform2D.scale;
+    childLocal.rotation *= currentParent->transform2D.rotation;
+  
+    glm::mat2 parentMat = currentParent->transform2D.mat2();
+    accumulatedPos = (parentMat * accumulatedPos) + currentParent->transform2D.translation;
+    accumulatedRotScale = parentMat * accumulatedRotScale;
+
+    currentParent = currentParent->parent;
+  }
+  return childLocal;
+}
+
 }

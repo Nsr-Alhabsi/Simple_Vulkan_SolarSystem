@@ -4,7 +4,7 @@
 #include "../ADDONS/json_setup.hpp"
 #include "lvs_model.hpp"
 #include "lvs_game_object.hpp"
-#include "lvs_game_animations.hpp"
+#include "properties/lvs_game_animations.hpp"
 
 #include <nlohmann/json.hpp>
 

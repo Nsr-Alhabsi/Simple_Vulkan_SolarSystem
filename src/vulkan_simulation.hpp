@@ -3,7 +3,7 @@
 #include "core/window_setup.hpp"
 #include "models/lvs_game_object.hpp"
 #include "models/lvs_renderer.hpp"
-#include "models/lvs_game_animations.hpp"
+#include "models/properties/lvs_game_animations.hpp"
 
 #include <nlohmann/json.hpp>
 #include <glm/gtc/constants.hpp>
