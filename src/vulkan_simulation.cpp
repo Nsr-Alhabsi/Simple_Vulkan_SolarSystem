@@ -85,11 +85,11 @@ void Simulation::loadGameObjects() {
   planetOrbit.TARGET_ID = planetId;
   planetOrbit.ANIMATION_NAME = "Planet_Orbit";
   planetOrbit.TYPE = g_AnimationManager.ANIMATION_TYPE_ROTATION;
-  planetOrbit.ANIMATION_TYPE_ROTATION.PIVOT_POINT = {0.0f, 0.0f};
-  planetOrbit.ANIMATION_TYPE_ROTATION.RADIUS = 3.f;
-  planetOrbit.ANIMATION_TYPE_ROTATION.ANIMATION_ENDING_RADIAN = glm::two_pi<float>();
-  planetOrbit.ANIMATION_DURATION = 6.f;
-  planetOrbit.ANIMATION_REPETITION = -1;
+  planetOrbit.rotation.pivot_point = {0.0f, 0.0f};
+  planetOrbit.rotation.radius = 3.f;
+  planetOrbit.rotation.ending_radian = glm::two_pi<float>();
+  planetOrbit.duration = 6.f;
+  planetOrbit.repetition = -1;
   g_AnimationManager.setAnimation(planetOrbit);
 
   // MOON
@@ -105,10 +105,10 @@ void Simulation::loadGameObjects() {
   moonOrbit.TARGET_ID = moonId;
   moonOrbit.ANIMATION_NAME = "Moon_Orbit";
   moonOrbit.TYPE = g_AnimationManager.ANIMATION_TYPE_ROTATION;
-  moonOrbit.ANIMATION_TYPE_ROTATION.RADIUS = 2.3f;
-  moonOrbit.ANIMATION_TYPE_ROTATION.ANIMATION_ENDING_RADIAN = glm::two_pi<float>();
-  moonOrbit.ANIMATION_DURATION = 2.f;
-  moonOrbit.ANIMATION_REPETITION = -1;
+  moonOrbit.rotation.radius = 2.3f;
+  moonOrbit.rotation.ending_radian = glm::two_pi<float>();
+  moonOrbit.duration = 2.f;
+  moonOrbit.repetition = -1;
   g_AnimationManager.setAnimation(moonOrbit);
 
   gameObjects.emplace(planetId, std::move(planet));

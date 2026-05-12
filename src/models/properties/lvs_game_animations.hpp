@@ -47,31 +47,31 @@ public:
 
     int TARGET_ID;
 
-    float ANIMATION_DURATION{1.f}; // Seconds
-    float ANIMATION_DELAY{0.f}; // Delay of animation in seconds
-    float ANIMATION_ELAPSED_TIME{0.f}; // Tracks elapsed time in seconds
-    float ANIMATION_ELAPSED_DELAY_TIME{0.f}; // Elapsed delay time
-    int ANIMATION_REPETITION{1}; // -1 for infinite 0+ for specific count
+    float duration{1.f}; // Seconds
+    float delay{0.f}; // Delay of animation in seconds
+    float elapsed_time{0.f}; // Tracks elapsed time in seconds
+    float elapsed_delay_time{0.f}; // Elapsed delay time
+    int repetition{1}; // -1 for infinite 0+ for specific count
 
-    bool ANIMATION_DELAY_FINISHED{false};
-    bool ANIMATION_REVERSE_ON_FINISH{false}; // A repetition counts only after completing the full round trip, not just upon reaching the endpoint.
+    bool delay_finished{false};
+    bool reverse_on_finish{false}; // A repetition counts only after completing the full round trip, not just upon reaching the endpoint.
     union {
       struct {
-        float ANIMATION_STARTING_RADIAN;
-        glm::vec2 PIVOT_POINT;
-        float ANIMATION_ENDING_RADIAN;
-        float RADIUS;
-      } ANIMATION_TYPE_ROTATION;
+        float starting_radian;
+        glm::vec2 pivot_point;
+        float ending_radian;
+        float radius;
+      } rotation;
       struct {
-        glm::vec2 ANIMATION_STARTING_POSITION;
+        glm::vec2 starting_position;
         float _PADDING;
-        glm::vec2 ANIMATION_ENDING_POSITION;
-        bool IS_RELATIVE;
-      } ANIMATION_TYPE_TRANSLATION;
+        glm::vec2 ending_position;
+        bool is_relative;
+      } translation;
       struct {
-        glm::vec2 ANIMATION_STARTING_SCALE_VECTOR;
-        glm::vec2 ANIMATION_ENDING_SCALE_VECTOR;
-      } ANIMATION_TYPE_SCALE;
+        glm::vec2 starting_scale;
+        glm::vec2 ending_scale;
+      } scale;
     };
 
     void* CALLBACK_DATA{nullptr};
