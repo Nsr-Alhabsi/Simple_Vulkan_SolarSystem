@@ -248,10 +248,7 @@ private:
   glm::vec2 vectorChangeCalculation(glm::vec2 &startingVector, glm::vec2 &endingVector, int animationID);
   bool checkAnimationState(int animationID);
 
-  void updateSOAValues(int idx);
-
-  void setSOAVectorStructure(AnimationProperties &animationProperty);
-  void updateSOAVectorStructure(int idxToInsertIn, AnimationProperties &animationProperty);
+  void syncPropertiesWithSOA(int idx, AnimationProperties &props, bool writeToSOA);
   LvsGameObject* getGameObject(int targetID);
   bool hasAnimation(int &animationID);
 };
