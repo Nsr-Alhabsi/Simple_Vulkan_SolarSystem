@@ -2,6 +2,7 @@
 
 #include "../lvs_game_object.hpp"
 #include "../../utils/easing_functions.hpp"
+#include "lvs_SoA_animations.hpp"
 
 // std:
 #include <unordered_map>
@@ -60,6 +61,7 @@ public:
     void* CALLBACK_DATA{nullptr};
     float (*ANIMATION_CUSTOM_EASE_FUNCTION)(float){nullptr}; // Only for CUSTOM_CURVE_STEER from the EaseType
   };
+
   LvsGameAnimations() = default;
   ~LvsGameAnimations() = default;
 
@@ -77,56 +79,23 @@ private:
 
   static const AnimationEaseFunction EASE_TABLE[];
 
-  std::vector<AnimationType> ANIMATION_SOA_VECTOR_ANIMATION_TYPE;
-  std::vector<LvsEasingFunctions::EaseType> ANIMATION_SOA_VECTOR_ANIMATION_EASE;
-  std::vector<AnimationState> ANIMATION_SOA_VECTOR_ANIMATION_STATE;
-
-  std::vector<std::string> ANIMATION_SOA_VECTOR_ANIMATION_NAME;
-  
-  std::vector<int> ANIMATION_SOA_VECTOR_TARGET_ID;
-  
-  std::vector<float> ANIMATION_SOA_VECTOR_ANIMATION_DURATION;
-  std::vector<float> ANIMATION_SOA_VECTOR_ANIMATION_DELAY;
-  std::vector<float> ANIMATION_SOA_VECTOR_ANIMATION_ELAPSED_TIME;
-  std::vector<float> ANIMATION_SOA_VECTOR_ANIMATION_ELAPSED_DELAY_TIME;
-  std::vector<int> ANIMATION_SOA_VECTOR_ANIMATION_REPETITION;
-  
-  std::vector<bool> ANIMATION_SOA_VECTOR_ANIMATION_DELAY_FINISHED;
-  std::vector<bool> ANIMATION_SOA_VECTOR_ANIMATION_REVERSE_ON_FINISH;
-
-  std::vector<float> ANIMATION_SOA_VECTOR_ROTATION_ANIMATION_STARTING_RADIAN;
-  std::vector<glm::vec2> ANIMATION_SOA_VECTOR_ROTATION_ANIMATION_PIVOT_POINT;
-  std::vector<float> ANIMATION_SOA_VECTOR_ROTATION_ANIMATION_ENDING_RADIAN;
-  std::vector<float> ANIMATION_SOA_VECTOR_ROTATION_ANIMATION_RADIUS;
-
-  std::vector<glm::vec2> ANIMATION_SOA_VECTOR_TRANSLATION_ANIMATION_STARTING_POSITION;
-  std::vector<glm::vec2> ANIMATION_SOA_VECTOR_TRANSLATION_ANIMATION_ENDING_POSITION;
-  std::vector<bool> ANIMATION_SOA_VECTOR_TRANSLATION_ANIMATION_IS_RELATIVE;
-
-  std::vector<glm::vec2> ANIMATION_SOA_VECTOR_SCALING_ANIMATION_STARTING_SCALE_VECTOR;
-  std::vector<glm::vec2> ANIMATION_SOA_VECTOR_SCALING_ANIMATION_ENDING_SCALE_VECTOR;
-
-  std::vector<void*> ANIMATION_SOA_VECTOR_ANIMATION_CALLBACK_DATA;
-  std::vector<float(*)(float)> ANIMATION_SOA_VECTOR_ANIMATION_CUSTOM_EASE_FUNCTION;
-
-  std::vector<int> ANIMATION_SOA_VECTOR_ANIMATION_ACTIVE_INDICES;
-  std::vector<int> ANIMATION_SOA_VECTOR_ANIMATION_FREE_SLOTS;
-
   std::unordered_map<id_t ,LvsGameObject>* GAME_OBJECTS;
 
   void setRotationAnimation(int animationID);
   void setTranslationAnimation(int animationID);
   void setScalingAnimation(int animationID);
-  
+
   void checkArgumentValidity(int animationID, AnimationState animationState);
   void resetToOriginalState(int &animationID);
-  
+
   glm::vec2 vectorChangeCalculation(glm::vec2 &startingVector, glm::vec2 &endingVector, int animationID);
   bool checkAnimationState(int animationID);
 
   void syncPropertiesWithSOA(int idx, AnimationProperties &props, bool writeToSOA);
   LvsGameObject* getGameObject(int targetID);
   bool hasAnimation(int &animationID);
+
+  LvsSoAAnimations soa;
 };
 
 extern LvsGameAnimations g_AnimationManager;

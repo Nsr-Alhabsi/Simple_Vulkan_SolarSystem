@@ -23,9 +23,9 @@ public:
     LvsGameObject* particle{nullptr};
   };
 
-  void setEffect(effectProperties);
+  int setEffect(effectProperties effect) { return LvsEffectManager::initializeEffect(effect); };
 
-  void updateEffects();
+  void updateEffects(); 
   
   void deleteEffect();
   
