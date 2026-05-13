@@ -32,6 +32,14 @@ struct Transform2DComponent {
 
 class LvsGameObject {
 public:
+  struct ObjectType {
+    enum {
+      Circle = 0,
+      Triangle = 1,
+      Square = 2
+    };
+  };
+
   using id_t = unsigned int;
 
   static LvsGameObject createGameObject(int typeOfObject, LvsDevice& device);

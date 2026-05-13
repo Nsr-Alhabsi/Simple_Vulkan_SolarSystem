@@ -1,10 +1,10 @@
 # Details
 
-Date : 2026-05-11 22:23:31
+Date : 2026-05-13 10:42:41
 
 Directory c:\\Users\\nasse\\OneDrive\\Desktop\\ProgrammingFiles\\C++ Files\\Simulations\\Vulkan\\SolarSystem_2D
 
-Total : 30 files,  2740 codes, 224 comments, 684 blanks, all 3648 lines
+Total : 38 files,  2725 codes, 225 comments, 671 blanks, all 3621 lines
 
 [Summary](results.md) / Details / [Diff Summary](diff.md) / [Diff Details](diff-details.md)
 
@@ -35,10 +35,18 @@ Total : 30 files,  2740 codes, 224 comments, 684 blanks, all 3648 lines
 | [src/models/lvs\_model.hpp](/src/models/lvs_model.hpp) | C++ | 30 | 2 | 11 | 43 |
 | [src/models/lvs\_renderer.cpp](/src/models/lvs_renderer.cpp) | C++ | 133 | 2 | 42 | 177 |
 | [src/models/lvs\_renderer.hpp](/src/models/lvs_renderer.hpp) | C++ | 46 | 0 | 14 | 60 |
-| [src/models/properties/lvs\_game\_animations.cpp](/src/models/properties/lvs_game_animations.cpp) | C++ | 387 | 39 | 100 | 526 |
-| [src/models/properties/lvs\_game\_animations.hpp](/src/models/properties/lvs_game_animations.hpp) | C++ | 223 | 1 | 36 | 260 |
+| [src/models/properties/lvs\_game\_animations.cpp](/src/models/properties/lvs_game_animations.cpp) | C++ | 368 | 39 | 78 | 485 |
+| [src/models/properties/lvs\_game\_animations.hpp](/src/models/properties/lvs_game_animations.hpp) | C++ | 100 | 1 | 32 | 133 |
 | [src/models/simple\_render\_system.cpp](/src/models/simple_render_system.cpp) | C++ | 78 | 2 | 21 | 101 |
 | [src/models/simple\_render\_system.hpp](/src/models/simple_render_system.hpp) | C++ | 26 | 0 | 10 | 36 |
+| [src/utils/easing\_functions.hpp](/src/utils/easing_functions.hpp) | C++ | 127 | 1 | 6 | 134 |
+| [src/visuals/Core/lvs\_effects.hpp](/src/visuals/Core/lvs_effects.hpp) | C++ | 0 | 0 | 1 | 1 |
+| [src/visuals/lvs\_effect\_manager.cpp](/src/visuals/lvs_effect_manager.cpp) | C++ | 0 | 0 | 1 | 1 |
+| [src/visuals/lvs\_effect\_manager.hpp](/src/visuals/lvs_effect_manager.hpp) | C++ | 0 | 0 | 1 | 1 |
+| [src/visuals/lvs\_particle\_system.cpp](/src/visuals/lvs_particle_system.cpp) | C++ | 0 | 0 | 1 | 1 |
+| [src/visuals/lvs\_particle\_system.hpp](/src/visuals/lvs_particle_system.hpp) | C++ | 0 | 0 | 1 | 1 |
+| [src/visuals/lvs\_post\_processing.cpp](/src/visuals/lvs_post_processing.cpp) | C++ | 0 | 0 | 1 | 1 |
+| [src/visuals/lvs\_post\_processing.hpp](/src/visuals/lvs_post_processing.hpp) | C++ | 0 | 0 | 1 | 1 |
 | [src/vulkan\_simulation.cpp](/src/vulkan_simulation.cpp) | C++ | 87 | 6 | 25 | 118 |
 | [src/vulkan\_simulation.hpp](/src/vulkan_simulation.hpp) | C++ | 50 | 4 | 14 | 68 |
 

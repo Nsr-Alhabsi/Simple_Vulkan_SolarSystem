@@ -1,17 +1,17 @@
 # Summary
 
-Date : 2026-05-11 22:23:31
+Date : 2026-05-13 10:42:41
 
 Directory c:\\Users\\nasse\\OneDrive\\Desktop\\ProgrammingFiles\\C++ Files\\Simulations\\Vulkan\\SolarSystem_2D
 
-Total : 30 files,  2740 codes, 224 comments, 684 blanks, all 3648 lines
+Total : 38 files,  2725 codes, 225 comments, 671 blanks, all 3621 lines
 
 Summary / [Details](details.md) / [Diff Summary](diff.md) / [Diff Details](diff-details.md)
 
 ## Languages
 | language | files | code | comment | blank | total |
 | :--- | ---: | ---: | ---: | ---: | ---: |
-| C++ | 24 | 2,544 | 217 | 634 | 3,395 |
+| C++ | 32 | 2,529 | 218 | 621 | 3,368 |
 | Markdown | 1 | 98 | 0 | 27 | 125 |
 | GLSL | 2 | 42 | 0 | 12 | 54 |
 | Makefile | 1 | 31 | 7 | 10 | 48 |
@@ -21,15 +21,19 @@ Summary / [Details](details.md) / [Diff Summary](diff.md) / [Diff Details](diff-
 ## Directories
 | path | files | code | comment | blank | total |
 | :--- | ---: | ---: | ---: | ---: | ---: |
-| . | 30 | 2,740 | 224 | 684 | 3,648 |
+| . | 38 | 2,725 | 225 | 671 | 3,621 |
 | . (Files) | 4 | 154 | 7 | 38 | 199 |
 | shaders | 2 | 42 | 0 | 12 | 54 |
-| src | 24 | 2,544 | 217 | 634 | 3,395 |
+| src | 32 | 2,529 | 218 | 621 | 3,368 |
 | src (Files) | 3 | 155 | 10 | 43 | 208 |
 | src\\ADDONS | 3 | 48 | 25 | 11 | 84 |
 | src\\core | 8 | 1,217 | 127 | 296 | 1,640 |
-| src\\models | 10 | 1,124 | 55 | 284 | 1,463 |
+| src\\models | 10 | 982 | 55 | 258 | 1,295 |
 | src\\models (Files) | 8 | 514 | 15 | 148 | 677 |
-| src\\models\\properties | 2 | 610 | 40 | 136 | 786 |
+| src\\models\\properties | 2 | 468 | 40 | 110 | 618 |
+| src\\utils | 1 | 127 | 1 | 6 | 134 |
+| src\\visuals | 7 | 0 | 0 | 7 | 7 |
+| src\\visuals (Files) | 6 | 0 | 0 | 6 | 6 |
+| src\\visuals\\Core | 1 | 0 | 0 | 1 | 1 |
 
 Summary / [Details](details.md) / [Diff Summary](diff.md) / [Diff Details](diff-details.md)

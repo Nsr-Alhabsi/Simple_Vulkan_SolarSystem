@@ -25,15 +25,6 @@ struct FrameInfo {
 };
 
 class Simulation {
-
-struct ObjectType {
-  enum {
-    Circle = 0,
-    Triangle = 1,
-    Square = 2
-  };
-};
-
 public:
   Simulation();
   ~Simulation();

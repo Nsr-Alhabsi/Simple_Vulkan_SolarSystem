@@ -64,7 +64,7 @@ void Simulation::run() {
 
 void Simulation::loadGameObjects() {
   // SUN
-  auto sun = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
+  auto sun = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
   sun.transform2D.scale /= 4;
   sun.color = {1.f, .8f, 0.f};
   sun.color2 = {1.f, .2f, .0f};
@@ -74,7 +74,7 @@ void Simulation::loadGameObjects() {
   gameObjects.emplace(sunId, std::move(sun));
 
   // PLANET
-  auto planet = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
+  auto planet = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
   planet.transform2D.scale /= 3;
   planet.color = {.25f, .25f, .25f};
   planet.hasParent = true;
@@ -93,7 +93,7 @@ void Simulation::loadGameObjects() {
   g_AnimationManager.setAnimation(planetOrbit);
 
   // MOON
-  auto moon = LvsGameObject::createGameObject(ObjectType::Circle, lvsDevice);
+  auto moon = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
   moon.transform2D.scale /= 2;
   // moon.transform2D.translation.x = 1.5f; // Offset from Planet
   moon.color = {0.5f, 0.5f, 0.5f};
