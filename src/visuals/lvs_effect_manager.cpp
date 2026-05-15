@@ -44,18 +44,30 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
 }
 
 int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
-  if (effect.duration <= 0.f) {
-    std::cout << cpc::Red << "ERROR: Effect duration must be greater than zero" << cpc::Reset << std::endl;
-    return -1;
+  if (effect.duration <= 0.f || effect.delay <= 0.f) {
+    std::cout << cpc::Yellow << "ERROR: Effect duration or delay must be greater than zero, Defaulting to 1" << cpc::Reset << std::endl;
+    
+    effect.duration = effect.duration <= 0.f ? 1.f : effect.duration;
+    effect.delay = effect.delay <= 0.f ? 1.f : effect.delay;
   }
 
-  if (soa.effect_particles[idx] == nullptr) {
+  if (effect.particle == nullptr) {
+    std::cout << cpc::Yellow << "EFFECT WARNING: Particle was set to nullptr deafulting to block" << cpc::Reset << std::endl;
+    auto block = &LvsGameObject::createGameObject(LvsGameObject::ObjectType::Square, lvsDevice);
+    block->color = {1.f, 1.f, 1.f};
+    block->transform2D.scale /= 10;
 
+    effect.particle = block;
   }
 
   if (soa.free_slots.empty()) {
+    std::cout << cpc::Red << "No free slots found" << cpc::Reset << std::endl;
     return -1; // No free slots
   }
+
+  effect.elapsed_time = 0.f;
+  effect.elapsed_delay_time = 0.f;
+  effect.delay_finished = effect.delay == 0.f ? true : false;
 
   int idx = soa.free_slots.back();
   soa.free_slots.pop_back();
