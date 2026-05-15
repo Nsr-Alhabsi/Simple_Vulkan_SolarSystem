@@ -1,0 +1,25 @@
+#pragma once
+
+#include "../../utils/easing_functions.hpp"
+#include "../../models/lvs_game_object.hpp"
+
+// std:
+#include <memory>
+
+namespace lvs {
+
+struct LvsSOAEffects {
+  std::unique_ptr<LvsEasingFunctions::EaseType[]> effect_ease_types;
+  std::unique_ptr<uint32_t[]> effect_particle_amounts;
+  
+  std::unique_ptr<float[]> effect_durations;
+  std::unique_ptr<float[]> effect_delays;
+
+  std::unique_ptr<float[]> effect_elapsed_times;
+  std::unique_ptr<float[]> effect_elapsed_delay_times;
+
+  std::unique_ptr<bool[]> effect_delays_finished;
+  std::unique_ptr<LvsGameObject[]> effect_particles;
+};
+
+}

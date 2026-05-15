@@ -64,22 +64,22 @@ void Simulation::run() {
 
 void Simulation::loadGameObjects() {
   // SUN
-  auto sun = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
-  sun.transform2D.scale /= 4;
-  sun.color = {1.f, .8f, 0.f};
-  sun.color2 = {1.f, .2f, .0f};
-  sun.gradDir = {0.f, 1.f};
-  sun.isGradient = true;
-  id_t sunId = sun.getId();
+  auto sun = &LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
+  sun->transform2D.scale /= 4;
+  sun->color = {1.f, .8f, 0.f};
+  sun->color2 = {1.f, .2f, .0f};
+  sun->gradDir = {0.f, 1.f};
+  sun->isGradient = true;
+  id_t sunId = sun->getId();
   gameObjects.emplace(sunId, std::move(sun));
 
   // PLANET
-  auto planet = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
-  planet.transform2D.scale /= 3;
-  planet.color = {.25f, .25f, .25f};
-  planet.hasParent = true;
-  planet.parentId = sunId;
-  id_t planetId = planet.getId();
+  auto planet = &LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
+  planet->transform2D.scale /= 3;
+  planet->color = {.25f, .25f, .25f};
+  planet->hasParent = true;
+  planet->parentId = sunId;
+  id_t planetId = planet->getId();
 
   LvsGameAnimations::AnimationProperties planetOrbit{};
   planetOrbit.TARGET_ID = planetId;
@@ -93,13 +93,13 @@ void Simulation::loadGameObjects() {
   g_AnimationManager.setAnimation(planetOrbit);
 
   // MOON
-  auto moon = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
-  moon.transform2D.scale /= 2;
+  auto moon = &LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
+  moon->transform2D.scale /= 2;
   // moon.transform2D.translation.x = 1.5f; // Offset from Planet
-  moon.color = {0.5f, 0.5f, 0.5f};
-  moon.hasParent = true;
-  moon.parentId = planetId;
-  id_t moonId = moon.getId();
+  moon->color = {0.5f, 0.5f, 0.5f};
+  moon->hasParent = true;
+  moon->parentId = planetId;
+  id_t moonId = moon->getId();
 
   LvsGameAnimations::AnimationProperties moonOrbit{};
   moonOrbit.TARGET_ID = moonId;

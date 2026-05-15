@@ -18,12 +18,11 @@ public:
     float elapsed_time{0.f};
     
     bool delay_finished{false};
-    bool effect_finished{false};
 
     LvsGameObject* particle{nullptr};
   };
 
-  int setEffect(effectProperties effect) { return LvsEffectManager::initializeEffect(effect); };
+  int setEffect(effectProperties effect) { return m_Manager.initializeEffect(effect); };
 
   void updateEffects(); 
   
