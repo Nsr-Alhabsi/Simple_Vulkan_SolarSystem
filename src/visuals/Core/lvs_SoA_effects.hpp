@@ -5,14 +5,11 @@
 
 // std:
 #include <memory>
+#include <vector>
 
 namespace lvs {
 
 struct LvsSOAEffects {
-  std::vector<uint32_t> m_FreeIndices;
-  
-  std::unique_ptr<bool[]> m_ActiveIndices;
-
   std::unique_ptr<LvsEasingFunctions::EaseType[]> effect_ease_types;
   std::unique_ptr<uint32_t[]> effect_particle_amounts;
   
@@ -24,6 +21,9 @@ struct LvsSOAEffects {
 
   std::unique_ptr<bool[]> effect_delays_finished;
   std::unique_ptr<LvsGameObject[]> effect_particles;
+
+  std::vector<int> active_indices;
+  std::vector<int> free_slots;
 };
 
 }

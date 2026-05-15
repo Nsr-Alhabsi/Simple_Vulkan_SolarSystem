@@ -163,8 +163,8 @@ LvsGameAnimations::AnimationProperties LvsGameAnimations::getAnimationInformatio
 }
 
 void LvsGameAnimations::syncPropertiesWithSOA(int idx, AnimationProperties &props, bool writeToSOA) {
-#define SYNC_VAL(field, vector) if(writeToSOA) vector[idx] = field; else field = static_cast<decltype(field)>(vector[idx]);
-#define SYNC_PUSH(field, vector) if(writeToSOA) vector.push_back(field);
+  #define SYNC_VAL(field, vector) if(writeToSOA) vector[idx] = field; else field = static_cast<decltype(field)>(vector[idx]);
+  #define SYNC_PUSH(field, vector) if(writeToSOA) vector.push_back(field);
 
   if (writeToSOA && (size_t)idx == soa.vector_animation_type.size()) {
     SYNC_PUSH(props.TYPE, soa.vector_animation_type);
