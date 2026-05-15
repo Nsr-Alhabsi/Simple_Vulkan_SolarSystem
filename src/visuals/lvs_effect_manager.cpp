@@ -1,5 +1,6 @@
 #include "lvs_effect_manager.hpp"
 #include "core/lvs_effects.hpp"
+#include "../ADDONS/cp_color.hpp"
 
 namespace lvs {
 
@@ -43,6 +44,15 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
 }
 
 int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
+  if (effect.duration <= 0.f) {
+    std::cout << cpc::Red << "ERROR: Effect duration must be greater than zero" << cpc::Reset << std::endl;
+    return -1;
+  }
+
+  if (soa.effect_particles[idx] == nullptr) {
+
+  }
+
   if (soa.free_slots.empty()) {
     return -1; // No free slots
   }
