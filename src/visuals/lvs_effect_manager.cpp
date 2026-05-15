@@ -18,6 +18,15 @@ void LvsEffectManager::init(uint32_t count) {
 
   soa.effect_delays_finished = std::make_unique<bool[]>(count);
   soa.effect_particles = std::make_unique<LvsGameObject[]>(count);
+
+  soa.m_ActiveIndices = std::make_unique<bool[]>(count);
+  std::fill_n(soa.m_ActiveIndices.get(), count, false);
+
+  soa.m_FreeIndices.reserve(count);
+  for (uint32_t i = 0; i < count; i++) {
+    soa.m_FreeIndices.push_back(i);
+    
+  }
 }
 
 int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
@@ -32,6 +41,8 @@ int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
     squareParticle->transform2D.scale /= 10.f;
     effect.particle = squareParticle;
   }
+
+  
 }
 
 }

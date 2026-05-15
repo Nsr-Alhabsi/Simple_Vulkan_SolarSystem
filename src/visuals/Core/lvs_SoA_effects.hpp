@@ -9,6 +9,10 @@
 namespace lvs {
 
 struct LvsSOAEffects {
+  std::vector<uint32_t> m_FreeIndices;
+  
+  std::unique_ptr<bool[]> m_ActiveIndices;
+
   std::unique_ptr<LvsEasingFunctions::EaseType[]> effect_ease_types;
   std::unique_ptr<uint32_t[]> effect_particle_amounts;
   
