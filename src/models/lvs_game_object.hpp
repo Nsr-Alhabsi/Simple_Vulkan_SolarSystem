@@ -42,6 +42,7 @@ public:
 
   using id_t = unsigned int;
 
+  LvsGameObject() : id{0} {}
   static LvsGameObject createGameObject(int typeOfObject, LvsDevice& device);
 
   glm::mat3 getGlobalMatrix(std::unordered_map<unsigned int, LvsGameObject>& objectList);

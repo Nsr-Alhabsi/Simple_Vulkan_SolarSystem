@@ -1,9 +1,12 @@
 #pragma once
 
-#include "lvs_effect_manager.hpp"
 #include "../../utils/easing_functions.hpp"
 #include "../../models/lvs_game_object.hpp"
+
 namespace lvs {
+
+class LvsEffectManager;
+
 class LvsEffects {
 public:
   struct effectProperties {
@@ -22,7 +25,9 @@ public:
     LvsGameObject* particle{nullptr};
   };
 
-  int setEffect(effectProperties effect) { return m_Manager.initializeEffect(effect); };
+  LvsEffects(LvsEffectManager& manager) : m_Manager{manager} {}
+
+  int setEffect(effectProperties effect);
 
   void updateEffects(); 
   

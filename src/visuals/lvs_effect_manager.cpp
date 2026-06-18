@@ -1,11 +1,13 @@
 #include "lvs_effect_manager.hpp"
 #include "core/lvs_effects.hpp"
 #include "../ADDONS/cp_color.hpp"
+#include <iostream>
 
 namespace lvs {
 
-void LvsEffectManager::init(uint32_t count) {
+void LvsEffectManager::init(LvsDevice& device, uint32_t count) {
   m_MaxEffects = count;
+  m_Device = &device;
 
   soa.effect_ease_types = std::make_unique<LvsEasingFunctions::EaseType[]>(count);
   soa.effect_particle_amounts = std::make_unique<uint32_t[]>(count);
@@ -53,11 +55,11 @@ int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
 
   if (effect.particle == nullptr) {
     std::cout << cpc::Yellow << "EFFECT WARNING: Particle was set to nullptr deafulting to block" << cpc::Reset << std::endl;
-    auto block = &LvsGameObject::createGameObject(LvsGameObject::ObjectType::Square, lvsDevice);
-    block->color = {1.f, 1.f, 1.f};
-    block->transform2D.scale /= 10;
+    auto block = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Square, *m_Device);
+    block.color = {1.f, 1.f, 1.f};
+    block.transform2D.scale /= 10;
 
-    effect.particle = block;
+    effect.particle = &block;
   }
 
   if (soa.free_slots.empty()) {

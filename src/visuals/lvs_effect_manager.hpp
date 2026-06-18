@@ -8,11 +8,12 @@ namespace lvs {
 class LvsEffectManager {
 private:
   uint32_t m_MaxEffects;
+  LvsDevice* m_Device{nullptr};
 
   void syncPropertiesWithSoA(int idx, LvsEffects::effectProperties &props, bool writeToSOA);
 
 public:
-  void init(uint32_t count);
+  void init(LvsDevice& device, uint32_t count);
   int initializeEffect(LvsEffects::effectProperties effect);
 
   LvsSOAEffects soa;
