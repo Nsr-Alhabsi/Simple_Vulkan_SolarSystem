@@ -16,6 +16,7 @@ SOURCES := $(wildcard $(SRC_DIR)/*.cpp) \
            $(wildcard $(SRC_DIR)/models/*.cpp) \
            $(wildcard $(SRC_DIR)/ADDONS/*.cpp) \
 					 $(wildcard $(SRC_DIR)/models/properties/*.cpp) \
+					 $(wildcard $(SRC_DIR)/models/utils/*.cpp) \
 					 $(wildcard $(SRC_DIR)/visuals/*.cpp) \
 					 $(wildcard $(SRC_DIR)/visuals/Core/*.cpp)
 

@@ -5,9 +5,8 @@
 
 namespace lvs {
 
-void LvsEffectManager::init(LvsDevice& device, uint32_t count) {
+void LvsEffectManager::init(uint32_t count) {
   m_MaxEffects = count;
-  m_Device = &device;
 
   soa.effect_ease_types = std::make_unique<LvsEasingFunctions::EaseType[]>(count);
   soa.effect_particle_amounts = std::make_unique<uint32_t[]>(count);
@@ -48,14 +47,19 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
 int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
   if (effect.duration <= 0.f || effect.delay <= 0.f) {
     std::cout << cpc::Yellow << "ERROR: Effect duration or delay must be greater than zero, Defaulting to 1" << cpc::Reset << std::endl;
-    
-    effect.duration = effect.duration <= 0.f ? 1.f : effect.duration;
-    effect.delay = effect.delay <= 0.f ? 1.f : effect.delay;
+  }
+
+  effect.duration = effect.duration <= 0.f ? 1.f : effect.duration;
+  effect.delay = effect.delay <= 0.f ? 1.f : effect.delay;
+
+  if (effect.particle_amount <= 0.f) {
+    std::cout << cpc::Yellow << "ERROR: Effect particle amount must be greater than zero, Defaulting to 1" << cpc::Reset << std::endl;
+    effect.particle_amount = 1;
   }
 
   if (effect.particle == nullptr) {
     std::cout << cpc::Yellow << "EFFECT WARNING: Particle was set to nullptr deafulting to block" << cpc::Reset << std::endl;
-    auto block = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Square, *m_Device);
+    auto block = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Square, lvsDevice);
     block.color = {1.f, 1.f, 1.f};
     block.transform2D.scale /= 10;
 
