@@ -17,10 +17,14 @@ public:
     float delay{0.f};
     float duration{1.f};
 
+    float particle_velocity{1.f};
+    float particle_direction{0.f}; // in degrees
+
     float elapsed_delay_time{0.f};
     float elapsed_time{0.f};
     
     bool delay_finished{false};
+    bool effected_by_gravity{true};
 
     LvsGameObject* particle{nullptr};
   };
