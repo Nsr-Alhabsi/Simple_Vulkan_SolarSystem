@@ -22,6 +22,13 @@ struct LvsSOAEffects {
   std::unique_ptr<bool[]> effect_delays_finished;
   std::unique_ptr<LvsGameObject[]> effect_particles;
 
+  std::unique_ptr<glm::vec2[]> effect_particle_starting_positions;
+  std::unique_ptr<glm::vec2[]> effect_particle_scales;
+  std::unique_ptr<float[]> effect_particle_directions;
+  std::unique_ptr<float[]> effect_particle_velocities;
+
+  std::unique_ptr<bool[]> effect_effected_by_gravity;
+
   std::vector<int> active_indices;
   std::vector<int> free_slots;
 };

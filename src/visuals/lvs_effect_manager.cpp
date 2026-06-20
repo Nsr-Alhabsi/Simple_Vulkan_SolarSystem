@@ -32,6 +32,11 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
   SYNC_VAL(props.elapsed_time, soa.effect_elapsed_times);
   SYNC_VAL(props.elapsed_delay_time, soa.effect_elapsed_delay_times);
   SYNC_VAL(props.delay_finished, soa.effect_delays_finished);
+  SYNC_VAL(props.particle_starting_position, soa.effect_particle_starting_positions);
+  SYNC_VAL(props.particle_scale, soa.effect_particle_scales);
+  SYNC_VAL(props.particle_direction, soa.effect_particle_directions);
+  SYNC_VAL(props.particle_velocity, soa.effect_particle_velocities);
+  SYNC_VAL(props.effected_by_gravity, soa.effect_effected_by_gravity);
 
   if (writeToSOA) {
     if (props.particle) {
@@ -75,6 +80,8 @@ int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
   effect.elapsed_delay_time = 0.f;
   effect.delay_finished = effect.delay == 0.f ? true : false;
 
+  effect.particle->transform2D.scale = effect.particle_scale;
+  effect.particle->transform2D.rotation = effect.particle_direction;
   effect.particle->transform2D.translation = effect.particle_starting_position;
 
   int idx = soa.free_slots.back();
