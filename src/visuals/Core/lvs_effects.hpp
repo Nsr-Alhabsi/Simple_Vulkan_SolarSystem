@@ -3,6 +3,8 @@
 #include "../../utils/easing_functions.hpp"
 #include "../../models/lvs_game_object.hpp"
 
+#include <glm/glm.hpp>
+
 namespace lvs {
 
 class LvsEffectManager;
@@ -17,8 +19,11 @@ public:
     float delay{0.f};
     float duration{1.f};
 
+    glm::vec2 particle_starting_position{0.f, 0.f};
+
     float particle_velocity{1.f};
     float particle_direction{0.f}; // in degrees
+    glm::vec2 particle_scale{1.f, 1.f};
 
     float elapsed_delay_time{0.f};
     float elapsed_time{0.f};

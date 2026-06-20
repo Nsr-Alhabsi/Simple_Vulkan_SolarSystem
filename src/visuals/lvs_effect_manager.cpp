@@ -75,6 +75,8 @@ int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
   effect.elapsed_delay_time = 0.f;
   effect.delay_finished = effect.delay == 0.f ? true : false;
 
+  effect.particle->transform2D.translation = effect.particle_starting_position;
+
   int idx = soa.free_slots.back();
   soa.free_slots.pop_back();
   soa.active_indices.push_back(idx);
