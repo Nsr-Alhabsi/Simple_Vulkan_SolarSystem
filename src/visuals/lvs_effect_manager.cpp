@@ -32,10 +32,12 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
   SYNC_VAL(props.elapsed_time, soa.effect_elapsed_times);
   SYNC_VAL(props.elapsed_delay_time, soa.effect_elapsed_delay_times);
   SYNC_VAL(props.delay_finished, soa.effect_delays_finished);
+
   SYNC_VAL(props.particle_starting_position, soa.effect_particle_starting_positions);
   SYNC_VAL(props.particle_scale, soa.effect_particle_scales);
   SYNC_VAL(props.particle_direction, soa.effect_particle_directions);
   SYNC_VAL(props.particle_velocity, soa.effect_particle_velocities);
+  
   SYNC_VAL(props.effected_by_gravity, soa.effect_effected_by_gravity);
 
   if (writeToSOA) {
