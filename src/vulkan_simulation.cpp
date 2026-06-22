@@ -1,4 +1,4 @@
-#include "vulkan_simulation.hpp"
+﻿#include "vulkan_simulation.hpp"
 #include "ADDONS/cp_color.hpp"
 #include "ADDONS/json_setup.hpp"
 
@@ -26,7 +26,7 @@ Simulation::~Simulation() {}
 
 void Simulation::updateFPS(std::chrono::high_resolution_clock::time_point &lastTime) {
   auto currentTime = std::chrono::high_resolution_clock::now();
-
+  
   float dt = std::chrono::duration<float>(currentTime - lastTime).count();
   lastTime = currentTime;
 
@@ -53,7 +53,7 @@ void Simulation::run() {
     glfwPollEvents();
     updateFPS(lastTime);
 
-    if (auto commandBuffer = lvsRenderer.beginFrame()) {
+    if (auto commandBuffer = lvsRenderer.beginFrame()) {      
       lvsRenderer.beginSwapChainRenderPass(commandBuffer);
       simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects);
       lvsRenderer.endSwapChainRenderPass(commandBuffer);
@@ -73,24 +73,26 @@ void Simulation::loadObjects() {
   id_t sunId = sun.getId();
   gameObjects.emplace(sunId, std::move(sun));
 
-  // PLANET — no hasParent/parentId: the animation drives it in world space
+  // PLANET
   auto planet = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
   planet.transform2D.scale /= 3;
   planet.color = {.25f, .25f, .25f};
+  planet.hasParent = true;
+  planet.parentId = sunId;
   id_t planetId = planet.getId();
 
   LvsGameAnimations::AnimationProperties planetOrbit{};
   planetOrbit.TARGET_ID = planetId;
   planetOrbit.ANIMATION_NAME = "Planet_Orbit";
   planetOrbit.TYPE = g_AnimationManager.ANIMATION_TYPE_ROTATION;
-  planetOrbit.rotation.pivot_point = {0.0f, 0.0f};  // sun sits at world origin
+  planetOrbit.rotation.pivot_point = {0.0f, 0.0f};
   planetOrbit.rotation.radius = 3.f;
   planetOrbit.rotation.ending_radian = glm::two_pi<float>();
   planetOrbit.duration = 6.f;
   planetOrbit.repetition = -1;
   g_AnimationManager.setAnimation(planetOrbit);
 
-  // MOON — hasParent/parentId used by the animation system as the dynamic pivot source
+  // MOON
   auto moon = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
   moon.transform2D.scale /= 2;
   // moon.transform2D.translation.x = 1.5f; // Offset from Planet
@@ -103,8 +105,6 @@ void Simulation::loadObjects() {
   moonOrbit.TARGET_ID = moonId;
   moonOrbit.ANIMATION_NAME = "Moon_Orbit";
   moonOrbit.TYPE = g_AnimationManager.ANIMATION_TYPE_ROTATION;
-  // pivot_point left at {0,0}: setRotationAnimation will override it each frame
-  // with the planet's current world position when hasParent is true
   moonOrbit.rotation.radius = 2.3f;
   moonOrbit.rotation.ending_radian = glm::two_pi<float>();
   moonOrbit.duration = 2.f;
