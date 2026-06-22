@@ -75,10 +75,8 @@ void Simulation::loadObjects() {
 
   // PLANET
   auto planet = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
-  planet.transform2D.scale /= 3;
+  planet.transform2D.scale /= 8;
   planet.color = {.25f, .25f, .25f};
-  planet.hasParent = true;
-  planet.parentId = sunId;
   id_t planetId = planet.getId();
 
   LvsGameAnimations::AnimationProperties planetOrbit{};
@@ -86,7 +84,7 @@ void Simulation::loadObjects() {
   planetOrbit.ANIMATION_NAME = "Planet_Orbit";
   planetOrbit.TYPE = g_AnimationManager.ANIMATION_TYPE_ROTATION;
   planetOrbit.rotation.pivot_point = {0.0f, 0.0f};
-  planetOrbit.rotation.radius = 3.f;
+  planetOrbit.rotation.radius = 0.6f;
   planetOrbit.rotation.ending_radian = glm::two_pi<float>();
   planetOrbit.duration = 6.f;
   planetOrbit.repetition = -1;
@@ -94,7 +92,7 @@ void Simulation::loadObjects() {
 
   // MOON
   auto moon = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
-  moon.transform2D.scale /= 2;
+  moon.transform2D.scale /= 5;
   // moon.transform2D.translation.x = 1.5f; // Offset from Planet
   moon.color = {0.5f, 0.5f, 0.5f};
   moon.hasParent = true;
@@ -105,7 +103,7 @@ void Simulation::loadObjects() {
   moonOrbit.TARGET_ID = moonId;
   moonOrbit.ANIMATION_NAME = "Moon_Orbit";
   moonOrbit.TYPE = g_AnimationManager.ANIMATION_TYPE_ROTATION;
-  moonOrbit.rotation.radius = 2.3f;
+  moonOrbit.rotation.radius = 0.25f;
   moonOrbit.rotation.ending_radian = glm::two_pi<float>();
   moonOrbit.duration = 2.f;
   moonOrbit.repetition = -1;
