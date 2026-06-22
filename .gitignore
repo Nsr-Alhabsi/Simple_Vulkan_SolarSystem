@@ -2,3 +2,4 @@ build/*.exe
 build/**/*.o
 .claude/
 .vscode/
+CLAUDE.md
