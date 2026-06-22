@@ -2,6 +2,7 @@
 #include "../lvs_game_object.hpp"
 #include "../../vulkan_simulation.hpp"
 #include "../../ADDONS/cp_color.hpp"
+#include <glm/gtc/matrix_inverse.hpp>
 
 // std:
 #include <iostream>
@@ -81,35 +82,31 @@ void LvsGameAnimations::setRotationAnimation(int animationID) {
 
   auto gameObject = getGameObject(soa.vector_target_ID[animationID]);
 
-  // If the target has a parent, dynamically override the pivot with the parent's
-  // current world position so the orbit follows the parent each frame.
   glm::vec2 pivot = soa.vector_animation_pivot_point[animationID];
   LvsGameObject* parent = nullptr;
+  glm::mat3 parentWorldMatrix{1.0f};
+
   if (gameObject->hasParent) {
     parent = getGameObject(static_cast<int>(gameObject->parentId));
     if (parent) {
-      pivot = parent->transform2D.translation;
+      // Use the parent's full world matrix so the pivot is the true world-space
+      // position (e.g. the planet's orbit position, not its local/parent-space translation).
+      parentWorldMatrix = parent->getGlobalMatrix(*GAME_OBJECTS);
+      pivot = {parentWorldMatrix[2][0], parentWorldMatrix[2][1]};
     }
   }
 
   float radius = soa.vector_animation_radius[animationID];
 
-  // Compute the desired world-space orbit position.
   float wx = pivot.x + cosf(currentFrameRotation) * radius;
   float wy = pivot.y + sinf(currentFrameRotation) * radius;
 
   if (gameObject->hasParent && parent) {
-    // getGlobalMatrix will multiply this object's local translation by the parent's
-    // world matrix (rotation + scale). To ensure the object ends up at {wx, wy} in
-    // world space, back-transform {wx, wy} into the parent's local space by applying
-    // the inverse of the parent's rotation-scale: inv(s*R) = (1/s)*R^T.
-    float pr = parent->transform2D.rotation;
-    float ps = parent->transform2D.scale.x; // assumed uniform scale
-    float dx = wx - parent->transform2D.translation.x;
-    float dy = wy - parent->transform2D.translation.y;
-    float lx = (cosf(pr) * dx + sinf(pr) * dy) / ps;
-    float ly = (-sinf(pr) * dx + cosf(pr) * dy) / ps;
-    gameObject->transform2D.translation = {lx, ly};
+    // Back-transform the desired world position into the parent's local space by
+    // inverting the full parent world matrix (handles any depth of parent chain).
+    glm::mat3 invParent = glm::inverse(parentWorldMatrix);
+    glm::vec3 localPos = invParent * glm::vec3(wx, wy, 1.0f);
+    gameObject->transform2D.translation = {localPos.x, localPos.y};
   } else {
     gameObject->transform2D.translation = {wx, wy};
   }
