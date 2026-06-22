@@ -40,7 +40,7 @@ public:
    */
   void run();
 private:
-  void loadGameObjects();
+  void loadObjects();
   void createCircleVertices(
     std::vector<LvsModel::Vertex> &vertices,
     int Smoothness, float radius,

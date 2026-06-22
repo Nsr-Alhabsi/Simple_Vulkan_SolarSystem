@@ -19,7 +19,7 @@ namespace lvs { // lvs stands for large - vulkan - simulation
 LvsGameAnimations g_AnimationManager;
 
 Simulation::Simulation() {
-  loadGameObjects();
+  loadObjects();
 }
 
 Simulation::~Simulation() {}
@@ -62,7 +62,7 @@ void Simulation::run() {
   }
 }
 
-void Simulation::loadGameObjects() {
+void Simulation::loadObjects() {
   // SUN
   auto sun = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
   sun.transform2D.scale /= 4;
