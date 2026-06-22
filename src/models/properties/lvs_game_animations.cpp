@@ -79,16 +79,41 @@ void LvsGameAnimations::setRotationAnimation(int animationID) {
   float totalRotationDistance = endingRadian - startingRadian;
   float currentFrameRotation = startingRadian + (totalRotationDistance * easedInterpolationFactor);
 
+  auto gameObject = getGameObject(soa.vector_target_ID[animationID]);
+
+  // If the target has a parent, dynamically override the pivot with the parent's
+  // current world position so the orbit follows the parent each frame.
   glm::vec2 pivot = soa.vector_animation_pivot_point[animationID];
+  LvsGameObject* parent = nullptr;
+  if (gameObject->hasParent) {
+    parent = getGameObject(static_cast<int>(gameObject->parentId));
+    if (parent) {
+      pivot = parent->transform2D.translation;
+    }
+  }
 
   float radius = soa.vector_animation_radius[animationID];
 
-  float x = pivot.x + cosf(currentFrameRotation) * radius;
-  float y = pivot.y + sinf(currentFrameRotation) * radius;
+  // Compute the desired world-space orbit position.
+  float wx = pivot.x + cosf(currentFrameRotation) * radius;
+  float wy = pivot.y + sinf(currentFrameRotation) * radius;
 
-  auto gameObject = getGameObject(soa.vector_target_ID[animationID]);
+  if (gameObject->hasParent && parent) {
+    // getGlobalMatrix will multiply this object's local translation by the parent's
+    // world matrix (rotation + scale). To ensure the object ends up at {wx, wy} in
+    // world space, back-transform {wx, wy} into the parent's local space by applying
+    // the inverse of the parent's rotation-scale: inv(s*R) = (1/s)*R^T.
+    float pr = parent->transform2D.rotation;
+    float ps = parent->transform2D.scale.x; // assumed uniform scale
+    float dx = wx - parent->transform2D.translation.x;
+    float dy = wy - parent->transform2D.translation.y;
+    float lx = (cosf(pr) * dx + sinf(pr) * dy) / ps;
+    float ly = (-sinf(pr) * dx + cosf(pr) * dy) / ps;
+    gameObject->transform2D.translation = {lx, ly};
+  } else {
+    gameObject->transform2D.translation = {wx, wy};
+  }
 
-  gameObject->transform2D.translation = {x, y};
   gameObject->transform2D.rotation = currentFrameRotation;
 }
 
