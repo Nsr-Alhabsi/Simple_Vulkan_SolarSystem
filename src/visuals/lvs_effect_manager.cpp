@@ -178,7 +178,7 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
 }
 
 int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
-  
+
 
   int idx = soa.free_slots.back();
   soa.free_slots.pop_back();
@@ -188,5 +188,21 @@ int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
 
   return idx;
 }
+
+template<typename T>
+T LvsEffectManager::getEffectProperties(int idx, T LvsEffects::effectProperties::* field) {
+  LvsEffects::effectProperties props;
+  syncPropertiesWithSoA(idx, props, false);
+  return props.*field;
+}
+
+template float       LvsEffectManager::getEffectProperties<float>(int, float LvsEffects::effectProperties::*);
+template int         LvsEffectManager::getEffectProperties<int>(int, int LvsEffects::effectProperties::*);
+template bool        LvsEffectManager::getEffectProperties<bool>(int, bool LvsEffects::effectProperties::*);
+template glm::vec2   LvsEffectManager::getEffectProperties<glm::vec2>(int, glm::vec2 LvsEffects::effectProperties::*);
+template glm::vec3   LvsEffectManager::getEffectProperties<glm::vec3>(int, glm::vec3 LvsEffects::effectProperties::*);  
+template uint32_t   LvsEffectManager::getEffectProperties<uint32_t>(int, uint32_t LvsEffects::effectProperties::*);
+template LvsEasingFunctions::EaseType LvsEffectManager::getEffectProperties<LvsEasingFunctions::EaseType>(int, LvsEasingFunctions::EaseType LvsEffects::effectProperties::*);
+template LvsGameObject* LvsEffectManager::getEffectProperties<LvsGameObject*>(int, LvsGameObject* LvsEffects::effectProperties::*);
 
 }
