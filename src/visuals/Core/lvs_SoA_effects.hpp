@@ -89,7 +89,7 @@ struct LvsSOAEffects {
   std::unique_ptr<void(*[])(void*)> effect_on_particle_death;
   std::unique_ptr<float(*[])(float)>              effect_EFFECT_CUSTOM_EASE_FUNCTION;
 
-  // --- Pool bookkeeping (unchanged) ---
+  // --- Pool bookkeeping ---
   std::vector<int> active_indices;
   std::vector<int> free_slots;
 };
