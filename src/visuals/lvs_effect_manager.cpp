@@ -25,20 +25,49 @@ void LvsEffectManager::init(uint32_t count) {
 void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperties &props, bool writeToSOA) {
   #define SYNC_VAL(field, vector) if(writeToSOA) vector[idx] = field; else field = static_cast<decltype(field)>(vector[idx]);
 
-  SYNC_VAL(props.EASE, soa.effect_ease_types);
-  SYNC_VAL(props.particle_amount, soa.effect_particle_amounts);
-  SYNC_VAL(props.duration, soa.effect_durations);
-  SYNC_VAL(props.delay, soa.effect_delays);
-  SYNC_VAL(props.elapsed_time, soa.effect_elapsed_times);
-  SYNC_VAL(props.elapsed_delay_time, soa.effect_elapsed_delay_times);
-  SYNC_VAL(props.delay_finished, soa.effect_delays_finished);
+  /// @brief Easing curve applied to the overall effect's main interpolation.
+    /// @note Defaults to LINEAR. Applies globally unless overridden by a per-property ease field.
+    LvsEasingFunctions::EaseType EASE{LvsEasingFunctions::LINEAR};
 
-  SYNC_VAL(props.particle_starting_position, soa.effect_particle_starting_positions);
-  SYNC_VAL(props.particle_scale, soa.effect_particle_scales);
-  SYNC_VAL(props.particle_direction, soa.effect_particle_directions);
-  SYNC_VAL(props.particle_velocity, soa.effect_particle_velocities);
-  
-  SYNC_VAL(props.effected_by_gravity, soa.effect_effected_by_gravity);
+    // PARTICLE PROPERTIES
+
+    /// @brief Pointer to the game object used as the particle template for this effect.
+    /// @note Must not be null before the effect is played. Ownership is not transferred.
+    LvsGameObject* particle{nullptr};
+
+    // Spawn / Emission
+
+    /// @brief World-space position where particles travel toward (or end up at) over their lifetime.
+    /// @note Units match the world coordinate system (NDC-derived or scene units).
+    glm::vec2 particle_ending_position{0.f, 0.f};
+
+    /// @brief Radius of the circular emission area around the emitter origin.
+    /// @note 0 emits from a single point. Units are scene/world units.
+    float emission_radius{0.f};
+
+    /// @brief Angular span of the emission cone, in degrees.
+    /// @note 360 emits in all directions. Values less than 360 create a directed arc.
+    float emission_arc{360.f};
+
+    /// @brief Rotational offset applied to the emission arc, in degrees.
+    /// @note 0 means the arc is centered on the positive-X axis. Positive values rotate counter-clockwise.
+    float emission_arc_offset{0.f};
+
+    /// @brief When true, particles spawn on the outer edge of emission_radius rather than inside it.
+    bool emit_from_edge{false};
+
+    /// @brief Number of particles spawned per second.
+    /// @note 0 disables continuous emission. Use burst_mode for instantaneous spawning.
+    float spawn_rate{0.f};
+
+    /// @brief Total number of times the effect replays after the first run.
+    /// @note 1 means the effect plays once (no repetition). -1 loops indefinitely.
+    int repetition{1};
+
+    /// @brief When true, the effect plays in reverse on alternating repetitions (ping-pong looping).
+    bool reverse_on_finish{false};
+
+  SYNC_VAL(props.EASE, soa.effect_ease_types);
 
   if (writeToSOA) {
     if (props.particle) {
@@ -52,39 +81,7 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
 }
 
 int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
-  if (effect.duration <= 0.f || effect.delay <= 0.f) {
-    std::cout << cpc::Yellow << "ERROR: Effect duration or delay must be greater than zero, Defaulting to 1" << cpc::Reset << std::endl;
-  }
-
-  effect.duration = effect.duration <= 0.f ? 1.f : effect.duration;
-  effect.delay = effect.delay <= 0.f ? 1.f : effect.delay;
-
-  if (effect.particle_amount <= 0.f) {
-    std::cout << cpc::Yellow << "ERROR: Effect particle amount must be greater than zero, Defaulting to 1" << cpc::Reset << std::endl;
-    effect.particle_amount = 1;
-  }
-
-  if (effect.particle == nullptr) {
-    std::cout << cpc::Yellow << "EFFECT WARNING: Particle was set to nullptr deafulting to block" << cpc::Reset << std::endl;
-    auto block = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Square, lvsDevice);
-    block.color = {1.f, 1.f, 1.f};
-    block.transform2D.scale /= 10;
-
-    effect.particle = &block;
-  }
-
-  if (soa.free_slots.empty()) {
-    std::cout << cpc::Red << "No free slots found" << cpc::Reset << std::endl;
-    return -1; // No free slots
-  }
-
-  effect.elapsed_time = 0.f;
-  effect.elapsed_delay_time = 0.f;
-  effect.delay_finished = effect.delay == 0.f ? true : false;
-
-  effect.particle->transform2D.scale = effect.particle_scale;
-  effect.particle->transform2D.rotation = effect.particle_direction;
-  effect.particle->transform2D.translation = effect.particle_starting_position;
+  
 
   int idx = soa.free_slots.back();
   soa.free_slots.pop_back();
