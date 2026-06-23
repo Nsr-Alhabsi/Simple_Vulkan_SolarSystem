@@ -93,7 +93,6 @@ void Simulation::loadObjects() {
   // MOON
   auto moon = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
   moon.transform2D.scale /= 5;
-  // moon.transform2D.translation.x = 1.5f; // Offset from Planet
   moon.color = {0.5f, 0.5f, 0.5f};
   moon.hasParent = true;
   moon.parentId = planetId;
