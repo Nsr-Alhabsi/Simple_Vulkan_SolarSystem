@@ -8,14 +8,82 @@ namespace lvs {
 void LvsEffectManager::init(uint32_t count) {
   m_MaxEffects = count;
 
-  soa.effect_ease_types = std::make_unique<LvsEasingFunctions::EaseType[]>(count);
-  soa.effect_particle_amounts = std::make_unique<uint32_t[]>(count);
-  soa.effect_durations = std::make_unique<float[]>(count);
-  soa.effect_delays = std::make_unique<float[]>(count);
-  soa.effect_elapsed_times = std::make_unique<float[]>(count);
-  soa.effect_elapsed_delay_times = std::make_unique<float[]>(count);
-  soa.effect_delays_finished = std::make_unique<bool[]>(count);
-  soa.effect_particles = std::make_unique<LvsGameObject[]>(count);
+  // --- General ---
+  soa.effect_EASE = std::make_unique<LvsEasingFunctions::EaseType[]>(count);
+
+  // --- Particle reference ---
+  soa.effect_particle = std::make_unique<LvsGameObject*[]>(count);
+
+  // --- Spawn / Emission ---
+  soa.effect_particle_ending_position = std::make_unique<glm::vec2[]>(count);
+  soa.effect_emission_radius          = std::make_unique<float[]>(count);
+  soa.effect_emission_arc             = std::make_unique<float[]>(count);
+  soa.effect_emission_arc_offset      = std::make_unique<float[]>(count);
+  soa.effect_emit_from_edge           = std::make_unique<bool[]>(count);
+  soa.effect_spawn_rate               = std::make_unique<float[]>(count);
+  soa.effect_repetition               = std::make_unique<int[]>(count);
+  soa.effect_reverse_on_finish        = std::make_unique<bool[]>(count);
+
+  // --- Motion / Physics ---
+  soa.effect_particle_velocity_end         = std::make_unique<float[]>(count);
+  soa.effect_particle__acceleration        = std::make_unique<glm::vec2[]>(count);
+  soa.effect_gravity_strength              = std::make_unique<float[]>(count);
+  soa.effect_particle_direction_end        = std::make_unique<float[]>(count);
+  soa.effect_particle_angular_velocity     = std::make_unique<float[]>(count);
+  soa.effect_particle_angular_velocity_end = std::make_unique<float[]>(count);
+  soa.effect_drag                          = std::make_unique<float[]>(count);
+  soa.effect_velocity_ease                 = std::make_unique<LvsEasingFunctions::EaseType[]>(count);
+  soa.effect_velocity_custom_ease_function = std::make_unique<float(*[])(float)>(count);
+
+  // --- Lifetime ---
+  soa.effect_particle_duration          = std::make_unique<float[]>(count);
+  soa.effect_particle_duration_variance = std::make_unique<float[]>(count);
+  soa.effect_particle_delay_variance    = std::make_unique<float[]>(count);
+  soa.effect_fade_in_time               = std::make_unique<float[]>(count);
+  soa.effect_fade_out_time              = std::make_unique<float[]>(count);
+  soa.effect_fade_ease                  = std::make_unique<LvsEasingFunctions::EaseType[]>(count);
+  soa.effect_destroy_on_finish          = std::make_unique<bool[]>(count);
+
+  // --- Appearance ---
+  soa.effect_particle_color_start       = std::make_unique<glm::vec3[]>(count);
+  soa.effect_particle_color_end         = std::make_unique<glm::vec3[]>(count);
+  soa.effect_particle_color2_start      = std::make_unique<glm::vec3[]>(count);
+  soa.effect_particle_color2_end        = std::make_unique<glm::vec3[]>(count);
+  soa.effect_color_ease                 = std::make_unique<LvsEasingFunctions::EaseType[]>(count);
+  soa.effect_use_gradient               = std::make_unique<bool[]>(count);
+  soa.effect_gradient_direction_start   = std::make_unique<glm::vec2[]>(count);
+  soa.effect_gradient_direction_end     = std::make_unique<glm::vec2[]>(count);
+  soa.effect_particle_opacity_start     = std::make_unique<float[]>(count);
+  soa.effect_particle_opacity_end       = std::make_unique<float[]>(count);
+  soa.effect_particle_scale_end         = std::make_unique<glm::vec2[]>(count);
+  soa.effect_scale_ease                 = std::make_unique<LvsEasingFunctions::EaseType[]>(count);
+  soa.effect_color_custom_ease_function = std::make_unique<float(*[])(float)>(count);
+  soa.effect_scale_custom_ease_function = std::make_unique<float(*[])(float)>(count);
+
+  // --- Looping / Repetition ---
+  soa.effect_loop_delay         = std::make_unique<float[]>(count);
+  soa.effect_burst_mode         = std::make_unique<bool[]>(count);
+  soa.effect_burst_count        = std::make_unique<int[]>(count);
+  soa.effect_burst_interval     = std::make_unique<float[]>(count);
+  soa.effect_current_repetition = std::make_unique<int[]>(count);
+
+  // --- Randomness / Variance ---
+  soa.effect_random_seed                = std::make_unique<uint32_t[]>(count);
+  soa.effect_velocity_variance          = std::make_unique<float[]>(count);
+  soa.effect_direction_variance         = std::make_unique<float[]>(count);
+  soa.effect_angular_velocity_variance  = std::make_unique<float[]>(count);
+  soa.effect_scale_variance             = std::make_unique<glm::vec2[]>(count);
+  soa.effect_color_start_variance       = std::make_unique<glm::vec3[]>(count);
+  soa.effect_color_end_variance         = std::make_unique<glm::vec3[]>(count);
+  soa.effect_opacity_variance           = std::make_unique<float[]>(count);
+  soa.effect_starting_position_variance = std::make_unique<glm::vec2[]>(count);
+
+  // --- Callbacks ---
+  soa.effect_callback_data            = std::make_unique<void*[]>(count);
+  soa.effect_on_effect_finish         = std::make_unique<void(*[])(void*)>(count);
+  soa.effect_on_particle_spawn        = std::make_unique<void(*[])(void*)>(count);
+  soa.effect_on_particle_death        = std::make_unique<void(*[])(void*)>(count);
+  soa.effect_EFFECT_CUSTOM_EASE_FUNCTION = std::make_unique<float(*[])(float)>(count);
 
   for (uint32_t i = 0; i < count; ++i) {
     soa.free_slots.push_back(i);
