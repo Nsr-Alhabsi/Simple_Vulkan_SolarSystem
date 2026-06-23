@@ -25,57 +25,86 @@ void LvsEffectManager::init(uint32_t count) {
 void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperties &props, bool writeToSOA) {
   #define SYNC_VAL(field, vector) if(writeToSOA) vector[idx] = field; else field = static_cast<decltype(field)>(vector[idx]);
 
-  /// @brief Easing curve applied to the overall effect's main interpolation.
-    /// @note Defaults to LINEAR. Applies globally unless overridden by a per-property ease field.
-    LvsEasingFunctions::EaseType EASE{LvsEasingFunctions::LINEAR};
+  // --- General ---
+  SYNC_VAL(props.EASE, soa.effect_EASE);
 
-    // PARTICLE PROPERTIES
-
-    /// @brief Pointer to the game object used as the particle template for this effect.
-    /// @note Must not be null before the effect is played. Ownership is not transferred.
-    LvsGameObject* particle{nullptr};
-
-    // Spawn / Emission
-
-    /// @brief World-space position where particles travel toward (or end up at) over their lifetime.
-    /// @note Units match the world coordinate system (NDC-derived or scene units).
-    glm::vec2 particle_ending_position{0.f, 0.f};
-
-    /// @brief Radius of the circular emission area around the emitter origin.
-    /// @note 0 emits from a single point. Units are scene/world units.
-    float emission_radius{0.f};
-
-    /// @brief Angular span of the emission cone, in degrees.
-    /// @note 360 emits in all directions. Values less than 360 create a directed arc.
-    float emission_arc{360.f};
-
-    /// @brief Rotational offset applied to the emission arc, in degrees.
-    /// @note 0 means the arc is centered on the positive-X axis. Positive values rotate counter-clockwise.
-    float emission_arc_offset{0.f};
-
-    /// @brief When true, particles spawn on the outer edge of emission_radius rather than inside it.
-    bool emit_from_edge{false};
-
-    /// @brief Number of particles spawned per second.
-    /// @note 0 disables continuous emission. Use burst_mode for instantaneous spawning.
-    float spawn_rate{0.f};
-
-    /// @brief Total number of times the effect replays after the first run.
-    /// @note 1 means the effect plays once (no repetition). -1 loops indefinitely.
-    int repetition{1};
-
-    /// @brief When true, the effect plays in reverse on alternating repetitions (ping-pong looping).
-    bool reverse_on_finish{false};
-
-  SYNC_VAL(props.EASE, soa.effect_ease_types);
-
+  // --- Particle reference ---
   if (writeToSOA) {
-    if (props.particle) {
-      soa.effect_particles[idx] = std::move(*props.particle);
-    }
+    soa.effect_particle[idx] = props.particle;
   } else {
-    props.particle = &soa.effect_particles[idx];
+    props.particle = soa.effect_particle[idx];
   }
+
+  // --- Spawn / Emission ---
+  SYNC_VAL(props.particle_ending_position, soa.effect_particle_ending_position);
+  SYNC_VAL(props.emission_radius,          soa.effect_emission_radius);
+  SYNC_VAL(props.emission_arc,             soa.effect_emission_arc);
+  SYNC_VAL(props.emission_arc_offset,      soa.effect_emission_arc_offset);
+  SYNC_VAL(props.emit_from_edge,           soa.effect_emit_from_edge);
+  SYNC_VAL(props.spawn_rate,               soa.effect_spawn_rate);
+  SYNC_VAL(props.repetition,               soa.effect_repetition);
+  SYNC_VAL(props.reverse_on_finish,        soa.effect_reverse_on_finish);
+
+  // --- Motion / Physics ---
+  SYNC_VAL(props.particle_velocity_end,            soa.effect_particle_velocity_end);
+  SYNC_VAL(props.particle__acceleration,            soa.effect_particle__acceleration);
+  SYNC_VAL(props.gravity_strength,                 soa.effect_gravity_strength);
+  SYNC_VAL(props.particle_direction_end,           soa.effect_particle_direction_end);
+  SYNC_VAL(props.particle_angular_velocity,        soa.effect_particle_angular_velocity);
+  SYNC_VAL(props.particle_angular_velocity_end,    soa.effect_particle_angular_velocity_end);
+  SYNC_VAL(props.drag,                             soa.effect_drag);
+  SYNC_VAL(props.velocity_ease,                    soa.effect_velocity_ease);
+  SYNC_VAL(props.velocity_custom_ease_function,    soa.effect_velocity_custom_ease_function);
+
+  // --- Lifetime ---
+  SYNC_VAL(props.particle_duration,          soa.effect_particle_duration);
+  SYNC_VAL(props.particle_duration_variance, soa.effect_particle_duration_variance);
+  SYNC_VAL(props.particle_delay_variance,    soa.effect_particle_delay_variance);
+  SYNC_VAL(props.fade_in_time,               soa.effect_fade_in_time);
+  SYNC_VAL(props.fade_out_time,              soa.effect_fade_out_time);
+  SYNC_VAL(props.fade_ease,                  soa.effect_fade_ease);
+  SYNC_VAL(props.destroy_on_finish,          soa.effect_destroy_on_finish);
+
+  // --- Appearance ---
+  SYNC_VAL(props.particle_color_start,       soa.effect_particle_color_start);
+  SYNC_VAL(props.particle_color_end,         soa.effect_particle_color_end);
+  SYNC_VAL(props.particle_color2_start,      soa.effect_particle_color2_start);
+  SYNC_VAL(props.particle_color2_end,        soa.effect_particle_color2_end);
+  SYNC_VAL(props.color_ease,                 soa.effect_color_ease);
+  SYNC_VAL(props.use_gradient,               soa.effect_use_gradient);
+  SYNC_VAL(props.gradient_direction_start,   soa.effect_gradient_direction_start);
+  SYNC_VAL(props.gradient_direction_end,     soa.effect_gradient_direction_end);
+  SYNC_VAL(props.particle_opacity_start,     soa.effect_particle_opacity_start);
+  SYNC_VAL(props.particle_opacity_end,       soa.effect_particle_opacity_end);
+  SYNC_VAL(props.particle_scale_end,         soa.effect_particle_scale_end);
+  SYNC_VAL(props.scale_ease,                 soa.effect_scale_ease);
+  SYNC_VAL(props.color_custom_ease_function, soa.effect_color_custom_ease_function);
+  SYNC_VAL(props.scale_custom_ease_function, soa.effect_scale_custom_ease_function);
+
+  // --- Looping / Repetition ---
+  SYNC_VAL(props.loop_delay,          soa.effect_loop_delay);
+  SYNC_VAL(props.burst_mode,          soa.effect_burst_mode);
+  SYNC_VAL(props.burst_count,         soa.effect_burst_count);
+  SYNC_VAL(props.burst_interval,      soa.effect_burst_interval);
+  SYNC_VAL(props.current_repetition,  soa.effect_current_repetition);
+
+  // --- Randomness / Variance ---
+  SYNC_VAL(props.random_seed,                  soa.effect_random_seed);
+  SYNC_VAL(props.velocity_variance,            soa.effect_velocity_variance);
+  SYNC_VAL(props.direction_variance,           soa.effect_direction_variance);
+  SYNC_VAL(props.angular_velocity_variance,    soa.effect_angular_velocity_variance);
+  SYNC_VAL(props.scale_variance,               soa.effect_scale_variance);
+  SYNC_VAL(props.color_start_variance,         soa.effect_color_start_variance);
+  SYNC_VAL(props.color_end_variance,           soa.effect_color_end_variance);
+  SYNC_VAL(props.opacity_variance,             soa.effect_opacity_variance);
+  SYNC_VAL(props.starting_position_variance,   soa.effect_starting_position_variance);
+
+  // --- Callbacks ---
+  SYNC_VAL(props.callback_data,              soa.effect_callback_data);
+  SYNC_VAL(props.on_effect_finish,           soa.effect_on_effect_finish);
+  SYNC_VAL(props.on_particle_spawn,          soa.effect_on_particle_spawn);
+  SYNC_VAL(props.on_particle_death,          soa.effect_on_particle_death);
+  SYNC_VAL(props.EFFECT_CUSTOM_EASE_FUNCTION, soa.effect_EFFECT_CUSTOM_EASE_FUNCTION);
 
   #undef SYNC_VAL
 }
