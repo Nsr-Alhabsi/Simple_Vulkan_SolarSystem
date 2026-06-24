@@ -5,6 +5,8 @@
 #include "models/lvs_renderer.hpp"
 #include "models/properties/lvs_game_animations.hpp"
 
+#include "visuals/Core/lvs_effects.hpp"
+
 #include <nlohmann/json.hpp>
 #include <glm/gtc/constants.hpp>
 
@@ -41,6 +43,8 @@ public:
   void run();
 private:
   void loadObjects();
+  LvsEffects::effectProperties getEffectProperties();
+
   void createCircleVertices(
     std::vector<LvsModel::Vertex> &vertices,
     int Smoothness, float radius,
@@ -52,7 +56,7 @@ private:
   LvsWindow lvsWindow; // empty since i already specified the window height, width and title in the AppSettings.json file.
   LvsDevice lvsDevice{lvsWindow};
   LvsRenderer lvsRenderer{lvsWindow, lvsDevice};
-
+  
   std::unordered_map<LvsGameObject::id_t, LvsGameObject> gameObjects;
 };
 

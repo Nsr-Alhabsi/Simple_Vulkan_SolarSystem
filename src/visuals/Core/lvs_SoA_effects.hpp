@@ -27,6 +27,7 @@ struct LvsSOAEffects {
   std::unique_ptr<float[]>     effect_spawn_rate;
   std::unique_ptr<int[]>       effect_repetition;
   std::unique_ptr<bool[]>      effect_reverse_on_finish;
+  std::unique_ptr<int[]>       effect_max_presistent_particles;
 
   // --- Motion / Physics ---
   std::unique_ptr<float[]>     effect_particle_velocity_end;

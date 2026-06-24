@@ -1,8 +1,13 @@
 #include "lvs_effect_manager.hpp"
+
 #include "core/lvs_effects.hpp"
+
 #include "../ADDONS/cp_color.hpp"
+
 #include <iostream>
 #include <algorithm>
+#include <cmath>
+
 namespace lvs {
 
 void LvsEffectManager::init(uint32_t count) {
@@ -23,6 +28,7 @@ void LvsEffectManager::init(uint32_t count) {
   soa.effect_spawn_rate               = std::make_unique<float[]>(count);
   soa.effect_repetition               = std::make_unique<int[]>(count);
   soa.effect_reverse_on_finish        = std::make_unique<bool[]>(count);
+  soa.effect_max_presistent_particles = std::make_unique<int[]>(count);
 
   // --- Motion / Physics ---
   soa.effect_particle_velocity_end         = std::make_unique<float[]>(count);
@@ -112,6 +118,7 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
   SYNC_VAL(props.spawn_rate,               soa.effect_spawn_rate);
   SYNC_VAL(props.repetition,               soa.effect_repetition);
   SYNC_VAL(props.reverse_on_finish,        soa.effect_reverse_on_finish);
+  SYNC_VAL(props.max_presistent_particles,  soa.effect_max_presistent_particles);
 
   // --- Motion / Physics ---
   SYNC_VAL(props.particle_velocity_end,            soa.effect_particle_velocity_end);
@@ -177,13 +184,49 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
   #undef SYNC_VAL
 }
 
+int LvsEffectManager::calculateMaxPresistentParticles(LvsEffects::effectProperties &props) {
+  int result = 1;
+
+  float max_lifetime = props.particle_duration
+                      + props.particle_duration_variance
+                      + props.particle_delay_variance;
+
+  if (!props.burst_mode && props.particle_duration != -1.f) {
+    result = (int)std::ceil(props.spawn_rate * max_lifetime * 1.2f);
+  } else if (!props.burst_mode && props.particle_duration == -1.f) {
+    result = props.max_presistent_particles;
+  } else if (props.burst_mode && props.particle_duration != -1.f) {
+    int overlapping_bursts;
+    if (props.burst_interval >= max_lifetime || props.repetition == 1) {
+      overlapping_bursts = 1;
+    } else {
+      overlapping_bursts = (int)std::ceil(max_lifetime / props.burst_interval);
+      if (props.repetition > 0) { overlapping_bursts = std::min(overlapping_bursts, props.repetition); }
+    }
+    result = props.burst_count * overlapping_bursts;
+  } else if (props.burst_mode && props.particle_duration == -1.f && props.repetition > 0) {
+    result = props.burst_count * props.repetition;
+  } else {
+    result = props.max_presistent_particles;
+  }
+
+  result = std::max(1, result);
+  return result;
+}
+
+void LvsEffectManager::initalizeParticle(LvsEffects::effectProperties &props) {
+  props.max_presistent_particles = calculateMaxPresistentParticles(props);
+
+}
+
 int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
 
   // --- Input clamping / validation ---
   // Emission
-  effect.emission_radius = std::max(0.f, effect.emission_radius);
-  effect.emission_arc    = std::clamp(effect.emission_arc, 0.f, 360.f);
-  effect.spawn_rate      = std::max(0.f, effect.spawn_rate);
+  effect.emission_radius           = std::max(0.f, effect.emission_radius);
+  effect.emission_arc              = std::clamp(effect.emission_arc, 0.f, 360.f);
+  effect.spawn_rate                = std::max(0.f, effect.spawn_rate);
+  effect.max_presistent_particles  = std::max(1, effect.max_presistent_particles);
 
   // Lifetime
   if (effect.particle_duration != -1.f)
@@ -216,6 +259,8 @@ int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
   effect.direction_variance        = std::max(0.f, effect.direction_variance);
   effect.angular_velocity_variance = std::max(0.f, effect.angular_velocity_variance);
   effect.opacity_variance          = std::max(0.f, effect.opacity_variance);
+
+  
 
   int idx = soa.free_slots.back();
   soa.free_slots.pop_back();

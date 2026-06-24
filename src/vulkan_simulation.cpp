@@ -62,6 +62,10 @@ void Simulation::run() {
   }
 }
 
+LvsEffects::effectProperties Simulation::getEffectProperties() {
+  // Continue for later
+}
+
 void Simulation::loadObjects() {
   // SUN
   auto sun = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
