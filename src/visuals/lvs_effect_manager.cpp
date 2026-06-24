@@ -2,7 +2,7 @@
 #include "core/lvs_effects.hpp"
 #include "../ADDONS/cp_color.hpp"
 #include <iostream>
-
+#include <algorithm>
 namespace lvs {
 
 void LvsEffectManager::init(uint32_t count) {
