@@ -180,16 +180,12 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
 int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
 
   // --- Input clamping / validation ---
-  // Only fields where an out-of-range value causes meaningful harm are guarded.
-  // Sentinels (-1) and unconstrained signed fields are left untouched.
-
   // Emission
   effect.emission_radius = std::max(0.f, effect.emission_radius);
   effect.emission_arc    = std::clamp(effect.emission_arc, 0.f, 360.f);
   effect.spawn_rate      = std::max(0.f, effect.spawn_rate);
 
   // Lifetime
-  // particle_duration: -1 is the "inherit" sentinel — only clamp non-sentinel values.
   if (effect.particle_duration != -1.f)
     effect.particle_duration = std::max(0.f, effect.particle_duration);
   effect.particle_duration_variance = std::max(0.f, effect.particle_duration_variance);
