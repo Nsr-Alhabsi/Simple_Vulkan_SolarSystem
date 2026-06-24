@@ -179,6 +179,47 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
 
 int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
 
+  // --- Input clamping / validation ---
+  // Only fields where an out-of-range value causes meaningful harm are guarded.
+  // Sentinels (-1) and unconstrained signed fields are left untouched.
+
+  // Emission
+  effect.emission_radius = std::max(0.f, effect.emission_radius);
+  effect.emission_arc    = std::clamp(effect.emission_arc, 0.f, 360.f);
+  effect.spawn_rate      = std::max(0.f, effect.spawn_rate);
+
+  // Lifetime
+  // particle_duration: -1 is the "inherit" sentinel — only clamp non-sentinel values.
+  if (effect.particle_duration != -1.f)
+    effect.particle_duration = std::max(0.f, effect.particle_duration);
+  effect.particle_duration_variance = std::max(0.f, effect.particle_duration_variance);
+  effect.particle_delay_variance    = std::max(0.f, effect.particle_delay_variance);
+  effect.fade_in_time               = std::max(0.f, effect.fade_in_time);
+  effect.fade_out_time              = std::max(0.f, effect.fade_out_time);
+
+  // Appearance — opacity [0, 1]
+  effect.particle_opacity_start = std::clamp(effect.particle_opacity_start, 0.f, 1.f);
+  effect.particle_opacity_end   = std::clamp(effect.particle_opacity_end,   0.f, 1.f);
+
+  // Appearance — color channels [0, 1]
+  effect.particle_color_start  = glm::clamp(effect.particle_color_start,  0.f, 1.f);
+  effect.particle_color_end    = glm::clamp(effect.particle_color_end,    0.f, 1.f);
+  effect.particle_color2_start = glm::clamp(effect.particle_color2_start, 0.f, 1.f);
+  effect.particle_color2_end   = glm::clamp(effect.particle_color2_end,   0.f, 1.f);
+
+  // Physics
+  effect.drag = std::max(0.f, effect.drag);
+
+  // Looping / Repetition
+  effect.loop_delay      = std::max(0.f, effect.loop_delay);
+  effect.burst_count     = std::max(1,   effect.burst_count);
+  effect.burst_interval  = std::max(0.f, effect.burst_interval);
+
+  // Variance
+  effect.velocity_variance         = std::max(0.f, effect.velocity_variance);
+  effect.direction_variance        = std::max(0.f, effect.direction_variance);
+  effect.angular_velocity_variance = std::max(0.f, effect.angular_velocity_variance);
+  effect.opacity_variance          = std::max(0.f, effect.opacity_variance);
 
   int idx = soa.free_slots.back();
   soa.free_slots.pop_back();
