@@ -47,6 +47,9 @@ public:
     /// @note 0 disables continuous emission. Use burst_mode for instantaneous spawning.
     float spawn_rate{0.f};
 
+    // @brief Used only when particle_duration is -1 For all other cases the limit is derived purely from existing properties:
+    int max_presistent_particles{200};
+
     /// @brief Total number of times the effect replays after the first run.
     /// @note 1 means the effect plays once (no repetition). -1 loops indefinitely.
     int repetition{1};
@@ -94,8 +97,8 @@ public:
     // Lifetime
 
     /// @brief Per-particle lifetime in seconds.
-    /// @note -1 causes the particle to inherit the effect's own duration. 0 would make particles die immediately.
-    float particle_duration{-1.f}; // per-particle lifetime; -1 = inherit duration
+    /// @note -1 causes the particle to live till the effect dies. 0 would make particles die immediately.
+    float particle_duration{-1.f}; // per-particle lifetime; -1 = duration of particle till effect dies
 
     /// @brief Maximum random deviation added to or subtracted from particle_duration, in seconds.
     /// @note 0 means all particles have identical lifetimes.
@@ -119,7 +122,7 @@ public:
     /// @brief When true, the effect object is automatically destroyed after all repetitions complete.
     bool destroy_on_finish{true};
 
-    // Apperance
+    // Appearance
     /// @brief RGB color of each particle at the start of its lifetime.
     /// @note Components are in [0, 1]. Used as the base (or first gradient) color.
     glm::vec3 particle_color_start{1, 1, 1};
