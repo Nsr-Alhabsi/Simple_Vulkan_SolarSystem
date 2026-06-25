@@ -28,6 +28,8 @@ struct LvsSOAEffects {
   std::unique_ptr<int[]>       effect_repetition;
   std::unique_ptr<bool[]>      effect_reverse_on_finish;
   std::unique_ptr<int[]>       effect_max_presistent_particles;
+  std::unique_ptr<bool[]>      effect_active;
+  std::unique_ptr<float[]>     effect_spawn_accumulator;
 
   // --- Motion / Physics ---
   std::unique_ptr<float[]>     effect_particle_velocity_start;
@@ -71,7 +73,9 @@ struct LvsSOAEffects {
   std::unique_ptr<bool[]>  effect_burst_mode;
   std::unique_ptr<int[]>   effect_burst_count;
   std::unique_ptr<float[]> effect_burst_interval;
+  std::unique_ptr<float[]> effect_burst_timer;
   std::unique_ptr<int[]>   effect_current_repetition;
+  std::unique_ptr<float[]> effect_loop_delay_remaining;
 
   // --- Randomness / Variance ---
   std::unique_ptr<uint32_t[]>  effect_random_seed;
@@ -122,6 +126,13 @@ struct LvsSOAParticles {
   std::unique_ptr<float[]> p_age;
   std::unique_ptr<float[]> p_lifetime;
   std::unique_ptr<float[]> p_delay_remaining;
+
+  // --- Spawn-time snapshots (stable baselines for per-frame interpolation) ---
+  std::unique_ptr<float[]>     p_velocity_start;
+  std::unique_ptr<float[]>     p_angular_vel_start;
+  std::unique_ptr<glm::vec2[]> p_scale_start;
+  std::unique_ptr<glm::vec3[]> p_color_start;
+  std::unique_ptr<float[]>     p_opacity_start;
 };
 
 }

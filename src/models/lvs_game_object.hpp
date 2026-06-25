@@ -55,10 +55,11 @@ public:
   id_t getId() {return id;}
 
   std::shared_ptr<LvsModel> model{};
-  glm::vec3 color{}; 
+  glm::vec3 color{};
   glm::vec3 color2{}; // This will only work if isGradient is true
   glm::vec2 gradDir{};
   bool isGradient{false};
+  bool visible{true};
 
   id_t parentId = 0;
   bool hasParent = false;

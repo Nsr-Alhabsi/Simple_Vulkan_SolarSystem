@@ -12,12 +12,12 @@ public:
     : m_EffectSoa{effectSoa}, m_ParticleSoa{particleSoa}, m_Rng{rng} {}
 
   void initalizeParticle(int effect_idx, int local_slot);
-  void updateParticlePosition(int idx);
+  void updateParticlePosition(int abs_idx, float dt);
 
 private:
-  void updateParticleRotation(int idx);
-  void updateParticleScale(int idx);
-  void updateParticleTranslation(int idx);
+  void updateParticleRotation(int abs_idx, float dt);
+  void updateParticleScale(int abs_idx, float dt);
+  void updateParticleTranslation(int abs_idx, float dt);
 
   LvsSOAEffects&   m_EffectSoa;
   LvsSOAParticles& m_ParticleSoa;

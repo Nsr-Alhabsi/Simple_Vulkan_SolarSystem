@@ -7,6 +7,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace lvs {
 
@@ -32,6 +33,8 @@ void LvsEffectManager::init(uint32_t count, uint32_t max_particles_total) {
   soa.effect_repetition               = std::make_unique<int[]>(count);
   soa.effect_reverse_on_finish        = std::make_unique<bool[]>(count);
   soa.effect_max_presistent_particles = std::make_unique<int[]>(count);
+  soa.effect_active                   = std::make_unique<bool[]>(count);
+  soa.effect_spawn_accumulator        = std::make_unique<float[]>(count);
 
   // --- Motion / Physics ---
   soa.effect_particle_velocity_start       = std::make_unique<float[]>(count);
@@ -75,7 +78,9 @@ void LvsEffectManager::init(uint32_t count, uint32_t max_particles_total) {
   soa.effect_burst_mode         = std::make_unique<bool[]>(count);
   soa.effect_burst_count        = std::make_unique<int[]>(count);
   soa.effect_burst_interval     = std::make_unique<float[]>(count);
+  soa.effect_burst_timer        = std::make_unique<float[]>(count);
   soa.effect_current_repetition = std::make_unique<int[]>(count);
+  soa.effect_loop_delay_remaining = std::make_unique<float[]>(count);
 
   // --- Randomness / Variance ---
   soa.effect_random_seed                = std::make_unique<uint32_t[]>(count);
@@ -112,7 +117,12 @@ void LvsEffectManager::init(uint32_t count, uint32_t max_particles_total) {
   particleSoa.p_opacity         = std::make_unique<float[]>(max_particles_total);
   particleSoa.p_age             = std::make_unique<float[]>(max_particles_total);
   particleSoa.p_lifetime        = std::make_unique<float[]>(max_particles_total);
-  particleSoa.p_delay_remaining = std::make_unique<float[]>(max_particles_total);
+  particleSoa.p_delay_remaining     = std::make_unique<float[]>(max_particles_total);
+  particleSoa.p_velocity_start      = std::make_unique<float[]>(max_particles_total);
+  particleSoa.p_angular_vel_start   = std::make_unique<float[]>(max_particles_total);
+  particleSoa.p_scale_start         = std::make_unique<glm::vec2[]>(max_particles_total);
+  particleSoa.p_color_start         = std::make_unique<glm::vec3[]>(max_particles_total);
+  particleSoa.p_opacity_start       = std::make_unique<float[]>(max_particles_total);
 
   for (uint32_t i = 0; i < count; ++i) {
     soa.free_slots.push_back(i);
@@ -142,6 +152,8 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
   SYNC_VAL(props.repetition,                soa.effect_repetition);
   SYNC_VAL(props.reverse_on_finish,         soa.effect_reverse_on_finish);
   SYNC_VAL(props.max_presistent_particles,  soa.effect_max_presistent_particles);
+  SYNC_VAL(props.active,                    soa.effect_active);
+  SYNC_VAL(props.spawn_accumulator,         soa.effect_spawn_accumulator);
 
   // --- Motion / Physics ---
   SYNC_VAL(props.particle_velocity_start,          soa.effect_particle_velocity_start);
@@ -181,11 +193,13 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
   SYNC_VAL(props.scale_custom_ease_function, soa.effect_scale_custom_ease_function);
 
   // --- Looping / Repetition ---
-  SYNC_VAL(props.loop_delay,          soa.effect_loop_delay);
-  SYNC_VAL(props.burst_mode,          soa.effect_burst_mode);
-  SYNC_VAL(props.burst_count,         soa.effect_burst_count);
-  SYNC_VAL(props.burst_interval,      soa.effect_burst_interval);
-  SYNC_VAL(props.current_repetition,  soa.effect_current_repetition);
+  SYNC_VAL(props.loop_delay,           soa.effect_loop_delay);
+  SYNC_VAL(props.burst_mode,           soa.effect_burst_mode);
+  SYNC_VAL(props.burst_count,          soa.effect_burst_count);
+  SYNC_VAL(props.burst_interval,       soa.effect_burst_interval);
+  SYNC_VAL(props.burst_timer,          soa.effect_burst_timer);
+  SYNC_VAL(props.current_repetition,   soa.effect_current_repetition);
+  SYNC_VAL(props.loop_delay_reamining, soa.effect_loop_delay_remaining);
 
   // --- Randomness / Variance ---
   SYNC_VAL(props.random_seed,                  soa.effect_random_seed);
@@ -199,10 +213,10 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
   SYNC_VAL(props.starting_position_variance,   soa.effect_starting_position_variance);
 
   // --- Callbacks ---
-  SYNC_VAL(props.callback_data,              soa.effect_callback_data);
-  SYNC_VAL(props.on_effect_finish,           soa.effect_on_effect_finish);
-  SYNC_VAL(props.on_particle_spawn,          soa.effect_on_particle_spawn);
-  SYNC_VAL(props.on_particle_death,          soa.effect_on_particle_death);
+  SYNC_VAL(props.callback_data,               soa.effect_callback_data);
+  SYNC_VAL(props.on_effect_finish,            soa.effect_on_effect_finish);
+  SYNC_VAL(props.on_particle_spawn,           soa.effect_on_particle_spawn);
+  SYNC_VAL(props.on_particle_death,           soa.effect_on_particle_death);
   SYNC_VAL(props.EFFECT_CUSTOM_EASE_FUNCTION, soa.effect_EFFECT_CUSTOM_EASE_FUNCTION);
 
   #undef SYNC_VAL
@@ -238,6 +252,13 @@ int LvsEffectManager::calculateMaxPresistentParticles(LvsEffects::effectProperti
   return result;
 }
 
+void LvsEffectManager::spawnParticle(int effect_idx) {
+  if (m_ParticleFreeSlots[effect_idx].empty()) return;
+  int local_slot = m_ParticleFreeSlots[effect_idx].back();
+  m_ParticleFreeSlots[effect_idx].pop_back();
+  particleSystem.initalizeParticle(effect_idx, local_slot);
+}
+
 int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
 
   // --- Input clamping / validation ---
@@ -246,6 +267,7 @@ int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
   effect.emission_arc              = std::clamp(effect.emission_arc, 0.f, 360.f);
   effect.spawn_rate                = std::max(0.f, effect.spawn_rate);
   effect.max_presistent_particles  = std::max(1, effect.max_presistent_particles);
+  effect.active = true;
 
   // Lifetime
   if (effect.particle_duration != -1.f)
@@ -273,6 +295,9 @@ int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
   effect.loop_delay      = std::max(0.f, effect.loop_delay);
   effect.burst_count     = std::max(1,   effect.burst_count);
   effect.burst_interval  = std::max(0.f, effect.burst_interval);
+  effect.loop_delay_reamining = effect.loop_delay;
+  effect.spawn_accumulator = 0.f;
+  effect.burst_timer       = effect.burst_interval; // prime so first burst fires on frame 1
 
   // Variance
   effect.velocity_variance         = std::max(0.f, effect.velocity_variance);
@@ -314,5 +339,87 @@ template glm::vec3   LvsEffectManager::getEffectProperties<glm::vec3>(int, glm::
 template uint32_t   LvsEffectManager::getEffectProperties<uint32_t>(int, uint32_t LvsEffects::effectProperties::*);
 template LvsEasingFunctions::EaseType LvsEffectManager::getEffectProperties<LvsEasingFunctions::EaseType>(int, LvsEasingFunctions::EaseType LvsEffects::effectProperties::*);
 template LvsGameObject* LvsEffectManager::getEffectProperties<LvsGameObject*>(int, LvsGameObject* LvsEffects::effectProperties::*);
+
+void LvsEffectManager::updateEffect(int effect_idx, float dt) {
+  if (!soa.effect_active[effect_idx]) return;
+
+  // Loop delay countdown
+  if (soa.effect_loop_delay_remaining[effect_idx] > 0.f) {
+    soa.effect_loop_delay_remaining[effect_idx] -= dt;
+    if (soa.effect_loop_delay_remaining[effect_idx] <= 0.f) {
+      // Delay finished: prime timer so spawn fires immediately next tick
+      soa.effect_burst_timer[effect_idx]       = soa.effect_burst_interval[effect_idx];
+      soa.effect_spawn_accumulator[effect_idx] = 0.f;
+    }
+    return;
+  }
+
+  // --- Spawn ---
+  if (soa.effect_burst_mode[effect_idx]) {
+    soa.effect_burst_timer[effect_idx] += dt;
+    float interval = soa.effect_burst_interval[effect_idx];
+    bool fire = (interval == 0.f) ? (soa.effect_burst_timer[effect_idx] > 0.f)
+                                  : (soa.effect_burst_timer[effect_idx] >= interval);
+    if (fire) {
+      for (int i = 0; i < soa.effect_burst_count[effect_idx]; ++i)
+        spawnParticle(effect_idx);
+
+      // Prevent re-fire this cycle; sentinel chosen so timer + dt won't reach interval again
+      soa.effect_burst_timer[effect_idx] = -std::numeric_limits<float>::max();
+
+      soa.effect_current_repetition[effect_idx]++;
+      int rep = soa.effect_repetition[effect_idx];
+      if (rep != -1 && soa.effect_current_repetition[effect_idx] >= rep) {
+        soa.effect_active[effect_idx] = false;
+        if (soa.effect_on_effect_finish[effect_idx])
+          soa.effect_on_effect_finish[effect_idx](soa.effect_callback_data[effect_idx]);
+        return;
+      }
+      soa.effect_loop_delay_remaining[effect_idx] = soa.effect_loop_delay[effect_idx];
+      if (soa.effect_loop_delay_remaining[effect_idx] <= 0.f) {
+        // No delay: reset timer immediately so next burst fires on schedule
+        soa.effect_burst_timer[effect_idx] = interval;
+      }
+    }
+  } else {
+    if (soa.effect_spawn_rate[effect_idx] > 0.f) {
+      soa.effect_spawn_accumulator[effect_idx] += dt;
+      float interval = 1.f / soa.effect_spawn_rate[effect_idx];
+      while (soa.effect_spawn_accumulator[effect_idx] >= interval) {
+        soa.effect_spawn_accumulator[effect_idx] -= interval;
+        spawnParticle(effect_idx);
+      }
+    }
+  }
+
+  // --- Per-particle update + death ---
+  int pool_base = soa.effect_particle_pool_effect[effect_idx];
+  int pool_cap  = soa.effect_max_simultaneous_particles[effect_idx];
+  for (int local = 0; local < pool_cap; ++local) {
+    int abs = pool_base + local;
+    if (!particleSoa.p_alive[abs]) continue;
+
+    if (particleSoa.p_delay_remaining[abs] > 0.f) {
+      particleSoa.p_delay_remaining[abs] -= dt;
+      continue;
+    }
+
+    particleSystem.updateParticlePosition(abs, dt);
+
+    float lifetime = particleSoa.p_lifetime[abs];
+    if (lifetime != -1.f && particleSoa.p_age[abs] >= lifetime) {
+      particleSoa.p_alive[abs] = false;
+      m_ParticleFreeSlots[effect_idx].push_back(local);
+      if (soa.effect_on_particle_death[effect_idx])
+        soa.effect_on_particle_death[effect_idx](soa.effect_callback_data[effect_idx]);
+    }
+  }
+}
+
+void LvsEffectManager::updateEffects(float dt) {
+  for (int idx : soa.active_indices) {
+    updateEffect(idx, dt);
+  }
+}
 
 }

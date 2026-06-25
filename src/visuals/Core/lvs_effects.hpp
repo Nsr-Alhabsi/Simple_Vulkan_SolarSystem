@@ -57,6 +57,11 @@ public:
     /// @brief When true, the effect plays in reverse on alternating repetitions (ping-pong looping).
     bool reverse_on_finish{false};
 
+    /// @brief Tells Whether the effect is active or not
+    bool active{true};
+
+    float spawn_accumulator{0.f};
+
     // Motion / Physics
 
     /// @brief Speed of each particle at the start of its lifetime, in world units per second.
@@ -197,9 +202,14 @@ public:
     /// @note 0 means bursts fire back-to-back without delay.
     float burst_interval{0.f};
 
+    float burst_timer{0.f};
+
     /// @brief Tracks how many repetitions have been completed so far at runtime.
     /// @note Managed internally by the effect system. Do not set manually before playback.
     int current_repetition{0};
+
+    /// @brief Reamining time till delay is finished in seconds
+    float loop_delay_reamining{0.f};
 
     // Randomness / Variance
 
@@ -264,17 +274,15 @@ public:
 
   LvsEffects(LvsEffectManager& manager) : m_Manager{manager} {}
 
-  int setEffect(effectProperties effect);
-
-  void updateEffects();
-
+  int  setEffect(effectProperties effect);
   void deleteEffect();
-
   void pauseEffect();
-
   void continueEffect();
+
+  int getEffectIdx() const { return m_EffectIdx; }
 private:
   LvsEffectManager& m_Manager;
+  int m_EffectIdx{-1};
 };
 
 }

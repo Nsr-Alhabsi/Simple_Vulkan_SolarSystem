@@ -1,4 +1,5 @@
 #include "simple_render_system.hpp"
+#include "../visuals/lvs_effect_manager.hpp"
 #include "../ADDONS/cp_color.hpp"
 #include "../ADDONS/json_setup.hpp"
 
@@ -73,7 +74,7 @@ void SimpleRenderSystem::renderGameObjects(
   g_AnimationManager.updateAnimations(gameObjects);
   for (auto& kv: gameObjects) {
     auto& obj = kv.second;
-    if (obj.model == nullptr) continue;
+    if (!obj.visible || obj.model == nullptr) continue;
 
     simplePushConstantData push{};
     push.color1 = obj.color;
@@ -94,6 +95,50 @@ void SimpleRenderSystem::renderGameObjects(
       0, sizeof(simplePushConstantData), &push);
     obj.model->bind(commandBuffer);
     obj.model->draw(commandBuffer);
+  }
+}
+
+void SimpleRenderSystem::renderParticles(VkCommandBuffer commandBuffer, LvsEffectManager& manager) {
+  const auto& effectSoa   = manager.getEffectSoA();
+  const auto& particleSoa = manager.getParticleSoA();
+
+  lvsPipeline->bind(commandBuffer);
+
+  for (int effect_idx : effectSoa.active_indices) {
+    LvsGameObject* tmpl = effectSoa.effect_particle[effect_idx];
+    if (!tmpl || !tmpl->model) continue;
+
+    int pool_base = effectSoa.effect_particle_pool_effect[effect_idx];
+    int pool_cap  = effectSoa.effect_max_simultaneous_particles[effect_idx];
+
+    for (int local = 0; local < pool_cap; ++local) {
+      int abs = pool_base + local;
+      if (!particleSoa.p_alive[abs])               continue;
+      if (particleSoa.p_delay_remaining[abs] > 0.f) continue;
+
+      glm::vec2 pos   = particleSoa.p_position[abs];
+      glm::vec2 scale = particleSoa.p_scale[abs];
+      glm::vec3 color = particleSoa.p_color[abs] * particleSoa.p_opacity[abs];
+
+      simplePushConstantData push{};
+      push.color1      = color;
+      push.color2      = tmpl->color2;
+      push.gradDir     = tmpl->gradDir;
+      push.useGradient = tmpl->isGradient ? 1 : 0;
+
+      glm::mat4 t{1.f};
+      t[0][0] = scale.x;
+      t[1][1] = scale.y;
+      t[3][0] = pos.x;
+      t[3][1] = pos.y;
+      push.transform = t;
+
+      vkCmdPushConstants(commandBuffer, pipelineLayout,
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        0, sizeof(simplePushConstantData), &push);
+      tmpl->model->bind(commandBuffer);
+      tmpl->model->draw(commandBuffer);
+    }
   }
 }
 

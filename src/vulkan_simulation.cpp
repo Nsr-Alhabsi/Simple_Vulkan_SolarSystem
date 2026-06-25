@@ -26,7 +26,7 @@ Simulation::~Simulation() {}
 
 void Simulation::updateFPS(std::chrono::high_resolution_clock::time_point &lastTime) {
   auto currentTime = std::chrono::high_resolution_clock::now();
-  
+
   float dt = std::chrono::duration<float>(currentTime - lastTime).count();
   lastTime = currentTime;
 
@@ -53,9 +53,11 @@ void Simulation::run() {
     glfwPollEvents();
     updateFPS(lastTime);
 
-    if (auto commandBuffer = lvsRenderer.beginFrame()) {      
+    if (auto commandBuffer = lvsRenderer.beginFrame()) {
+      effectManager.updateEffects(FrameInformation.deltaFrameTime);
       lvsRenderer.beginSwapChainRenderPass(commandBuffer);
       simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects);
+      simpleRenderSystem.renderParticles(commandBuffer, effectManager);
       lvsRenderer.endSwapChainRenderPass(commandBuffer);
       lvsRenderer.endFrame();
     }
@@ -63,10 +65,12 @@ void Simulation::run() {
 }
 
 LvsEffects::effectProperties Simulation::getEffectProperties() {
-  // Continue for later
+  return {};
 }
 
 void Simulation::loadObjects() {
+  effectManager.init(10, 1000);
+
   // SUN
   auto sun = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
   sun.transform2D.scale /= 4;
@@ -114,6 +118,33 @@ void Simulation::loadObjects() {
 
   gameObjects.emplace(planetId, std::move(planet));
   gameObjects.emplace(moonId, std::move(moon));
+
+  auto particleTemplate = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
+  particleTemplate.transform2D.scale       = {0.015f, 0.015f};
+  particleTemplate.transform2D.translation = {0.f, 0.f};
+  particleTemplate.color = {1.f, 0.8f, 0.f};
+  particleTemplate.visible = false;
+  id_t particleTemplateId = particleTemplate.getId();
+  gameObjects.emplace(particleTemplateId, std::move(particleTemplate));
+
+  LvsEffects::effectProperties fx{};
+  fx.particle               = &gameObjects.at(particleTemplateId);
+  fx.emission_radius        = 0.27f;  
+  fx.emit_from_edge         = true;   
+  fx.emission_arc           = 360.f;
+  fx.spawn_rate             = 25.f;
+  fx.particle_duration      = 1.2f;
+  fx.particle_velocity_start = 0.45f;
+  fx.particle_velocity_end   = 0.f;
+  fx.velocity_ease          = LvsEasingFunctions::EASE_OUT_QUAD;
+  fx.particle_color_start   = {1.f, 0.8f, 0.f};
+  fx.particle_color_end     = {1.f, 0.1f, 0.f};
+  fx.particle_opacity_start  = 1.f;
+  fx.particle_opacity_end    = 0.f;
+  fx.fade_out_time          = 0.4f;
+  fx.particle_scale_end     = {0.005f, 0.005f};
+  fx.repetition             = -1;
+  effectManager.initializeEffect(fx);
 }
 
 }

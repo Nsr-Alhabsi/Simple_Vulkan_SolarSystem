@@ -8,6 +8,25 @@
 
 namespace lvs {
 
+static float applyEase(LvsEasingFunctions::EaseType ease, float(*customFn)(float), float t) {
+  using E = LvsEasingFunctions;
+  if (ease == E::CUSTOM_CURVE_STEER && customFn) return customFn(t);
+  static float(*const TABLE[])(float) = {
+    E::LINEAR_FUNCTION,
+    E::EASE_IN_SINE_FUNCTION,     E::EASE_OUT_SINE_FUNCTION,     E::EASE_IN_OUT_SINE_FUNCTION,
+    E::EASE_IN_QUAD_FUNCTION,     E::EASE_OUT_QUAD_FUNCTION,     E::EASE_IN_OUT_QUAD_FUNCTION,
+    E::EASE_IN_CUBIC_FUNCTION,    E::EASE_OUT_CUBIC_FUNCTION,    E::EASE_IN_OUT_CUBIC_FUNCTION,
+    E::EASE_IN_QUART_FUNCTION,    E::EASE_OUT_QUART_FUNCTION,    E::EASE_IN_OUT_QUART_FUNCTION,
+    E::EASE_IN_QUINT_FUNCTION,    E::EASE_OUT_QUINT_FUNCTION,    E::EASE_IN_OUT_QUINT_FUNCTION,
+    E::EASE_IN_EXPO_FUNCTION,     E::EASE_OUT_EXPO_FUNCTION,     E::EASE_IN_OUT_EXPO_FUNCTION,
+    E::EASE_IN_CIRC_FUNCTION,     E::EASE_OUT_CIRC_FUNCTION,     E::EASE_IN_OUT_CIRC_FUNCTION,
+    E::EASE_IN_BACK_FUNCTION,     E::EASE_OUT_BACK_FUNCTION,     E::EASE_IN_OUT_BACK_FUNCTION,
+    E::EASE_IN_ELASTIC_FUNCTION,  E::EASE_OUT_ELASTIC_FUNCTION,  E::EASE_IN_OUT_ELASTIC_FUNCTION,
+    E::EASE_IN_BOUNCE_FUNCTION,   E::EASE_OUT_BOUNCE_FUNCTION,   E::EASE_IN_OUT_BOUNCE_FUNCTION,
+  };
+  return TABLE[ease](t);
+}
+
 void LvsParticleSystem::initalizeParticle(int effect_idx, int local_slot) {
   int abs_idx = m_EffectSoa.effect_particle_pool_effect[effect_idx] + local_slot;
 
@@ -102,12 +121,110 @@ void LvsParticleSystem::initalizeParticle(int effect_idx, int local_slot) {
     0.f, 1.f
   );
 
+  // Snapshot spawned values so update functions have stable interpolation baselines
+  m_ParticleSoa.p_velocity_start[abs_idx]    = m_ParticleSoa.p_velocity[abs_idx];
+  m_ParticleSoa.p_angular_vel_start[abs_idx] = m_ParticleSoa.p_angular_vel[abs_idx];
+  m_ParticleSoa.p_scale_start[abs_idx]       = m_ParticleSoa.p_scale[abs_idx];
+  m_ParticleSoa.p_color_start[abs_idx]       = m_ParticleSoa.p_color[abs_idx];
+  m_ParticleSoa.p_opacity_start[abs_idx]     = m_ParticleSoa.p_opacity[abs_idx];
+
   // Spawn callback
   if (m_EffectSoa.effect_on_particle_spawn[effect_idx] != nullptr)
     m_EffectSoa.effect_on_particle_spawn[effect_idx](m_EffectSoa.effect_callback_data[effect_idx]);
 }
 
-void LvsParticleSystem::updateParticlePosition(int idx) {
+void LvsParticleSystem::updateParticleTranslation(int abs_idx, float dt) {
+  int eidx = m_ParticleSoa.p_effect_idx[abs_idx];
+
+  float t = 0.f;
+  float lifetime = m_ParticleSoa.p_lifetime[abs_idx];
+  if (lifetime > 0.f)
+    t = std::clamp(m_ParticleSoa.p_age[abs_idx] / lifetime, 0.f, 1.f);
+
+  float easedT = (lifetime != -1.f)
+    ? applyEase(m_EffectSoa.effect_velocity_ease[eidx], m_EffectSoa.effect_velocity_custom_ease_function[eidx], t)
+    : 0.f;
+
+  float speed = glm::mix(m_ParticleSoa.p_velocity_start[abs_idx],
+                          m_EffectSoa.effect_particle_velocity_end[eidx],
+                          easedT);
+  speed *= std::max(0.f, 1.f - m_EffectSoa.effect_drag[eidx] * dt);
+
+  float dirRad = glm::radians(m_ParticleSoa.p_direction[abs_idx]);
+  m_ParticleSoa.p_position[abs_idx] += glm::vec2(std::cos(dirRad), std::sin(dirRad)) * speed * dt;
+  m_ParticleSoa.p_position[abs_idx] += m_EffectSoa.effect_particle__acceleration[eidx] * dt;
+  m_ParticleSoa.p_position[abs_idx].y -= m_EffectSoa.effect_gravity_strength[eidx] * dt;
+}
+
+void LvsParticleSystem::updateParticleRotation(int abs_idx, float dt) {
+  int eidx = m_ParticleSoa.p_effect_idx[abs_idx];
+
+  float t = 0.f;
+  float lifetime = m_ParticleSoa.p_lifetime[abs_idx];
+  if (lifetime > 0.f)
+    t = std::clamp(m_ParticleSoa.p_age[abs_idx] / lifetime, 0.f, 1.f);
+
+  float easedT = (lifetime != -1.f)
+    ? applyEase(m_EffectSoa.effect_velocity_ease[eidx], m_EffectSoa.effect_velocity_custom_ease_function[eidx], t)
+    : 0.f;
+
+  float currentAngVel = glm::mix(m_ParticleSoa.p_angular_vel_start[abs_idx],
+                                   m_EffectSoa.effect_particle_angular_velocity_end[eidx],
+                                   easedT);
+  m_ParticleSoa.p_direction[abs_idx] += currentAngVel * dt;
+}
+
+void LvsParticleSystem::updateParticleScale(int abs_idx, float dt) {
+  int eidx = m_ParticleSoa.p_effect_idx[abs_idx];
+
+  float t = 0.f;
+  float lifetime = m_ParticleSoa.p_lifetime[abs_idx];
+  if (lifetime > 0.f)
+    t = std::clamp(m_ParticleSoa.p_age[abs_idx] / lifetime, 0.f, 1.f);
+
+  float easedT = (lifetime != -1.f)
+    ? applyEase(m_EffectSoa.effect_scale_ease[eidx], m_EffectSoa.effect_scale_custom_ease_function[eidx], t)
+    : 0.f;
+
+  m_ParticleSoa.p_scale[abs_idx] = glm::mix(m_ParticleSoa.p_scale_start[abs_idx],
+                                              m_EffectSoa.effect_particle_scale_end[eidx],
+                                              easedT);
+  (void)dt;
+}
+
+void LvsParticleSystem::updateParticlePosition(int abs_idx, float dt) {
+  m_ParticleSoa.p_age[abs_idx] += dt;
+
+  int eidx     = m_ParticleSoa.p_effect_idx[abs_idx];
+  float age     = m_ParticleSoa.p_age[abs_idx];
+  float lifetime = m_ParticleSoa.p_lifetime[abs_idx];
+
+  float t = 0.f;
+  if (lifetime > 0.f) t = std::clamp(age / lifetime, 0.f, 1.f);
+
+  // Color interpolation
+  float colorT = (lifetime != -1.f)
+    ? applyEase(m_EffectSoa.effect_color_ease[eidx], m_EffectSoa.effect_color_custom_ease_function[eidx], t)
+    : 0.f;
+  m_ParticleSoa.p_color[abs_idx] = glm::mix(m_ParticleSoa.p_color_start[abs_idx],
+                                              m_EffectSoa.effect_particle_color_end[eidx],
+                                              colorT);
+
+  // Opacity interpolation with fade-in / fade-out
+  float opacity = glm::mix(m_ParticleSoa.p_opacity_start[abs_idx],
+                            m_EffectSoa.effect_particle_opacity_end[eidx],
+                            colorT);
+  if (lifetime > 0.f) {
+    float fadeIn  = m_EffectSoa.effect_fade_in_time[eidx];
+    float fadeOut = m_EffectSoa.effect_fade_out_time[eidx];
+    if (fadeIn  > 0.f && age < fadeIn)              opacity *= age / fadeIn;
+    else if (fadeOut > 0.f && age > lifetime - fadeOut) opacity *= std::max(0.f, (lifetime - age) / fadeOut);
+  }
+  m_ParticleSoa.p_opacity[abs_idx] = std::clamp(opacity, 0.f, 1.f);
+
+  updateParticleTranslation(abs_idx, dt);
+  updateParticleRotation(abs_idx, dt);
+  updateParticleScale(abs_idx, dt);
 }
 
 }

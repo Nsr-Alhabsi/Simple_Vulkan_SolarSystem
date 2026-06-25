@@ -13,6 +13,8 @@
 
 namespace lvs {
 
+class LvsEffectManager;
+
 class SimpleRenderSystem {
 public:
   SimpleRenderSystem(LvsDevice& device, VkRenderPass renderPass);
@@ -22,6 +24,7 @@ public:
   SimpleRenderSystem& operator=(const SimpleRenderSystem &) = delete;
 
   void renderGameObjects(VkCommandBuffer commandBuffer, std::unordered_map<LvsGameObject::id_t, LvsGameObject>& gameObjects);
+  void renderParticles(VkCommandBuffer commandBuffer, LvsEffectManager& manager);
 private:
   void createPipelineLayout();
   void createPipeline(VkRenderPass renderPass);
