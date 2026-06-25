@@ -30,6 +30,7 @@ struct LvsSOAEffects {
   std::unique_ptr<int[]>       effect_max_presistent_particles;
 
   // --- Motion / Physics ---
+  std::unique_ptr<float[]>     effect_particle_velocity_start;
   std::unique_ptr<float[]>     effect_particle_velocity_end;
   std::unique_ptr<glm::vec2[]> effect_particle__acceleration;
   std::unique_ptr<float[]>     effect_gravity_strength;

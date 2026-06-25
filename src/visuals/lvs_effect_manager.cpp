@@ -34,6 +34,7 @@ void LvsEffectManager::init(uint32_t count, uint32_t max_particles_total) {
   soa.effect_max_presistent_particles = std::make_unique<int[]>(count);
 
   // --- Motion / Physics ---
+  soa.effect_particle_velocity_start       = std::make_unique<float[]>(count);
   soa.effect_particle_velocity_end         = std::make_unique<float[]>(count);
   soa.effect_particle__acceleration        = std::make_unique<glm::vec2[]>(count);
   soa.effect_gravity_strength              = std::make_unique<float[]>(count);
@@ -143,6 +144,7 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
   SYNC_VAL(props.max_presistent_particles,  soa.effect_max_presistent_particles);
 
   // --- Motion / Physics ---
+  SYNC_VAL(props.particle_velocity_start,          soa.effect_particle_velocity_start);
   SYNC_VAL(props.particle_velocity_end,            soa.effect_particle_velocity_end);
   SYNC_VAL(props.particle__acceleration,           soa.effect_particle__acceleration);
   SYNC_VAL(props.gravity_strength,                 soa.effect_gravity_strength);
@@ -236,9 +238,6 @@ int LvsEffectManager::calculateMaxPresistentParticles(LvsEffects::effectProperti
   return result;
 }
 
-void LvsEffectManager::initalizeParticle(int effect_idx, int local_slot) {
-}
-
 int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
 
   // --- Input clamping / validation ---
@@ -268,6 +267,7 @@ int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
 
   // Physics
   effect.drag = std::max(0.f, effect.drag);
+  effect.particle_velocity_start = std::max(0.f, effect.particle_velocity_start);
 
   // Looping / Repetition
   effect.loop_delay      = std::max(0.f, effect.loop_delay);

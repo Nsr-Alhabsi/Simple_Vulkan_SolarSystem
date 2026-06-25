@@ -59,6 +59,10 @@ public:
 
     // Motion / Physics
 
+    /// @brief Speed of each particle at the start of its lifetime, in world units per second.
+    /// @note Interpolated toward particle_velocity_end over the particle's duration.
+    float particle_velocity_start{1.f};
+
     /// @brief Speed of each particle at the end of its lifetime, in world units per second.
     /// @note Interpolated from the particle's initial velocity toward this value over its duration.
     float particle_velocity_end{1.f};
