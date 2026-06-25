@@ -1,5 +1,9 @@
 #include "lvs_particle_system.hpp"
 
+// ============================================================
+//  INCLUDES
+// ============================================================
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -8,6 +12,12 @@
 
 namespace lvs {
 
+// ============================================================
+//  CONSTANTS / STATICS
+// ============================================================
+
+// Dispatches to the correct easing function. Falls back to the custom
+// function pointer when ease == CUSTOM_CURVE_STEER and the pointer is set.
 static float applyEase(LvsEasingFunctions::EaseType ease, float(*customFn)(float), float t) {
   using E = LvsEasingFunctions;
   if (ease == E::CUSTOM_CURVE_STEER && customFn) return customFn(t);
@@ -26,6 +36,10 @@ static float applyEase(LvsEasingFunctions::EaseType ease, float(*customFn)(float
   };
   return TABLE[ease](t);
 }
+
+// ============================================================
+//  PUBLIC METHODS
+// ============================================================
 
 void LvsParticleSystem::initalizeParticle(int effect_idx, int local_slot) {
   int abs_idx = m_EffectSoa.effect_particle_pool_effect[effect_idx] + local_slot;
@@ -133,6 +147,45 @@ void LvsParticleSystem::initalizeParticle(int effect_idx, int local_slot) {
     m_EffectSoa.effect_on_particle_spawn[effect_idx](m_EffectSoa.effect_callback_data[effect_idx]);
 }
 
+void LvsParticleSystem::updateParticlePosition(int abs_idx, float dt) {
+  m_ParticleSoa.p_age[abs_idx] += dt;
+
+  int eidx     = m_ParticleSoa.p_effect_idx[abs_idx];
+  float age     = m_ParticleSoa.p_age[abs_idx];
+  float lifetime = m_ParticleSoa.p_lifetime[abs_idx];
+
+  float t = 0.f;
+  if (lifetime > 0.f) t = std::clamp(age / lifetime, 0.f, 1.f);
+
+  // Color interpolation
+  float colorT = (lifetime != -1.f)
+    ? applyEase(m_EffectSoa.effect_color_ease[eidx], m_EffectSoa.effect_color_custom_ease_function[eidx], t)
+    : 0.f;
+  m_ParticleSoa.p_color[abs_idx] = glm::mix(m_ParticleSoa.p_color_start[abs_idx],
+                                              m_EffectSoa.effect_particle_color_end[eidx],
+                                              colorT);
+
+  // Opacity interpolation with fade-in / fade-out
+  float opacity = glm::mix(m_ParticleSoa.p_opacity_start[abs_idx],
+                            m_EffectSoa.effect_particle_opacity_end[eidx],
+                            colorT);
+  if (lifetime > 0.f) {
+    float fadeIn  = m_EffectSoa.effect_fade_in_time[eidx];
+    float fadeOut = m_EffectSoa.effect_fade_out_time[eidx];
+    if (fadeIn  > 0.f && age < fadeIn)              opacity *= age / fadeIn;
+    else if (fadeOut > 0.f && age > lifetime - fadeOut) opacity *= std::max(0.f, (lifetime - age) / fadeOut);
+  }
+  m_ParticleSoa.p_opacity[abs_idx] = std::clamp(opacity, 0.f, 1.f);
+
+  updateParticleTranslation(abs_idx, dt);
+  updateParticleRotation(abs_idx, dt);
+  updateParticleScale(abs_idx, dt);
+}
+
+// ============================================================
+//  PRIVATE METHODS / HELPERS
+// ============================================================
+
 void LvsParticleSystem::updateParticleTranslation(int abs_idx, float dt) {
   int eidx = m_ParticleSoa.p_effect_idx[abs_idx];
 
@@ -192,39 +245,4 @@ void LvsParticleSystem::updateParticleScale(int abs_idx, float dt) {
   (void)dt;
 }
 
-void LvsParticleSystem::updateParticlePosition(int abs_idx, float dt) {
-  m_ParticleSoa.p_age[abs_idx] += dt;
-
-  int eidx     = m_ParticleSoa.p_effect_idx[abs_idx];
-  float age     = m_ParticleSoa.p_age[abs_idx];
-  float lifetime = m_ParticleSoa.p_lifetime[abs_idx];
-
-  float t = 0.f;
-  if (lifetime > 0.f) t = std::clamp(age / lifetime, 0.f, 1.f);
-
-  // Color interpolation
-  float colorT = (lifetime != -1.f)
-    ? applyEase(m_EffectSoa.effect_color_ease[eidx], m_EffectSoa.effect_color_custom_ease_function[eidx], t)
-    : 0.f;
-  m_ParticleSoa.p_color[abs_idx] = glm::mix(m_ParticleSoa.p_color_start[abs_idx],
-                                              m_EffectSoa.effect_particle_color_end[eidx],
-                                              colorT);
-
-  // Opacity interpolation with fade-in / fade-out
-  float opacity = glm::mix(m_ParticleSoa.p_opacity_start[abs_idx],
-                            m_EffectSoa.effect_particle_opacity_end[eidx],
-                            colorT);
-  if (lifetime > 0.f) {
-    float fadeIn  = m_EffectSoa.effect_fade_in_time[eidx];
-    float fadeOut = m_EffectSoa.effect_fade_out_time[eidx];
-    if (fadeIn  > 0.f && age < fadeIn)              opacity *= age / fadeIn;
-    else if (fadeOut > 0.f && age > lifetime - fadeOut) opacity *= std::max(0.f, (lifetime - age) / fadeOut);
-  }
-  m_ParticleSoa.p_opacity[abs_idx] = std::clamp(opacity, 0.f, 1.f);
-
-  updateParticleTranslation(abs_idx, dt);
-  updateParticleRotation(abs_idx, dt);
-  updateParticleScale(abs_idx, dt);
-}
-
-}
+} // namespace lvs

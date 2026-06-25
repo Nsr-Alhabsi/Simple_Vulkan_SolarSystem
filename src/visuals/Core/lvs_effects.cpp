@@ -1,6 +1,10 @@
 #include "lvs_effects.hpp"
 #include "../lvs_effect_manager.hpp"
 
+// ============================================================
+//  PUBLIC METHODS
+// ============================================================
+
 namespace lvs {
 
 int LvsEffects::setEffect(effectProperties effect) {
@@ -21,4 +25,4 @@ void LvsEffects::deleteEffect(int idx) {
     if (idx == m_EffectIdx) m_EffectIdx = -1;
 }
 
-}
+} // namespace lvs
