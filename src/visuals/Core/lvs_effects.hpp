@@ -275,9 +275,9 @@ public:
   LvsEffects(LvsEffectManager& manager) : m_Manager{manager} {}
 
   int  setEffect(effectProperties effect);
-  void deleteEffect();
-  void pauseEffect();
-  void continueEffect();
+  void deleteEffect(int idx);
+  void pauseEffect(int idx);
+  void continueEffect(int idx);
 
   int getEffectIdx() const { return m_EffectIdx; }
 private:

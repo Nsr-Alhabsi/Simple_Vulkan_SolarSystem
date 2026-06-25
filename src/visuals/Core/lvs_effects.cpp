@@ -4,23 +4,21 @@
 namespace lvs {
 
 int LvsEffects::setEffect(effectProperties effect) {
-    return m_Manager.initializeEffect(effect);
+    m_EffectIdx = m_Manager.initializeEffect(effect);
+    return m_EffectIdx;
 }
 
-void LvsEffects::updateEffects() {
-    // TODO: implement
+void LvsEffects::pauseEffect(int idx) {
+    m_Manager.pauseEffect(idx);
 }
 
-void LvsEffects::deleteEffect() {
-    // TODO: implement
+void LvsEffects::continueEffect(int idx) {
+    m_Manager.continueEffect(idx);
 }
 
-void LvsEffects::pauseEffect() {
-    // TODO: implement
-}
-
-void LvsEffects::continueEffect() {
-    // TODO: implement
+void LvsEffects::deleteEffect(int idx) {
+    m_Manager.deleteEffect(idx);
+    if (idx == m_EffectIdx) m_EffectIdx = -1;
 }
 
 }

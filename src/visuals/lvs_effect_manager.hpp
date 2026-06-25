@@ -35,6 +35,10 @@ public:
   void updateEffect(int effect_idx, float dt);
   void updateEffects(float dt);
 
+  void pauseEffect(int idx);
+  void continueEffect(int idx);
+  void deleteEffect(int idx);
+
   const LvsSOAEffects&   getEffectSoA()   const { return soa; }
   const LvsSOAParticles& getParticleSoA() const { return particleSoa; }
 

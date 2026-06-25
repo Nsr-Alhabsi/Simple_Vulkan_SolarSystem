@@ -324,6 +324,35 @@ int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
   return idx;
 }
 
+void LvsEffectManager::pauseEffect(int idx) {
+  if (idx < 0 || idx >= (int)m_MaxEffects) return;
+  soa.effect_active[idx] = false;
+}
+
+void LvsEffectManager::continueEffect(int idx) {
+  if (idx < 0 || idx >= (int)m_MaxEffects) return;
+  soa.effect_active[idx] = true;
+}
+
+void LvsEffectManager::deleteEffect(int idx) {
+  if (idx < 0 || idx >= (int)m_MaxEffects) return;
+
+  int pool_base = soa.effect_particle_pool_effect[idx];
+  int pool_cap  = soa.effect_max_simultaneous_particles[idx];
+
+  m_ParticleFreeSlots[idx].clear();
+  for (int local = 0; local < pool_cap; ++local) {
+    particleSoa.p_alive[pool_base + local] = false;
+    m_ParticleFreeSlots[idx].push_back(local);
+  }
+
+  auto& ai = soa.active_indices;
+  ai.erase(std::remove(ai.begin(), ai.end(), idx), ai.end());
+
+  soa.free_slots.push_back(idx);
+  soa.effect_active[idx] = false;
+}
+
 template<typename T>
 T LvsEffectManager::getEffectProperties(int idx, T LvsEffects::effectProperties::* field) {
   LvsEffects::effectProperties props;
