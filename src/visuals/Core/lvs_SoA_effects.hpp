@@ -84,15 +84,43 @@ struct LvsSOAEffects {
   std::unique_ptr<glm::vec2[]> effect_starting_position_variance;
 
   // --- Callbacks ---
-  std::unique_ptr<void*[]>          effect_callback_data;
-  std::unique_ptr<void(*[])(void*)> effect_on_effect_finish;
-  std::unique_ptr<void(*[])(void*)> effect_on_particle_spawn;
-  std::unique_ptr<void(*[])(void*)> effect_on_particle_death;
-  std::unique_ptr<float(*[])(float)>              effect_EFFECT_CUSTOM_EASE_FUNCTION;
+  std::unique_ptr<void*[]>           effect_callback_data;
+  std::unique_ptr<void(*[])(void*)>  effect_on_effect_finish;
+  std::unique_ptr<void(*[])(void*)>  effect_on_particle_spawn;
+  std::unique_ptr<void(*[])(void*)>  effect_on_particle_death;
+  std::unique_ptr<float(*[])(float)> effect_EFFECT_CUSTOM_EASE_FUNCTION;
+
+  // --- particle control ---
+  std::unique_ptr<int[]> effect_max_simultaneous_particles;
+  std::unique_ptr<int[]> effect_particle_pool_effect;
 
   // --- Pool bookkeeping ---
   std::vector<int> active_indices;
   std::vector<int> free_slots;
+};
+
+struct LvsSOAParticles {
+  // --- Bookkeeping ---
+  std::unique_ptr<bool[]>     p_alive;
+  std::unique_ptr<int[]>      p_effect_idx;
+  std::unique_ptr<int[]>      p_local_slot;
+
+  // --- Motion state ---
+  std::unique_ptr<glm::vec2[]> p_position;
+  std::unique_ptr<glm::vec2[]> p_spawn_position;
+  std::unique_ptr<float[]>     p_velocity;
+  std::unique_ptr<float[]>     p_direction;
+  std::unique_ptr<float[]>     p_angular_vel;
+
+  // --- Visual state ---
+  std::unique_ptr<glm::vec2[]> p_scale;
+  std::unique_ptr<glm::vec3[]> p_color;
+  std::unique_ptr<float[]>     p_opacity;
+
+  // --- Timing ---
+  std::unique_ptr<float[]> p_age;
+  std::unique_ptr<float[]> p_lifetime;
+  std::unique_ptr<float[]> p_delay_remaining;
 };
 
 }

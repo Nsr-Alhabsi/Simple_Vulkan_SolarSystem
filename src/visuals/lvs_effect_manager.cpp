@@ -10,8 +10,11 @@
 
 namespace lvs {
 
-void LvsEffectManager::init(uint32_t count) {
+void LvsEffectManager::init(uint32_t count, uint32_t max_particles_total) {
   m_MaxEffects = count;
+  m_MaxParticles = max_particles_total;
+  m_ParticlePoolCursor = 0;
+  m_ParticleFreeSlots.resize(count);
 
   // --- General ---
   soa.effect_EASE = std::make_unique<LvsEasingFunctions::EaseType[]>(count);
@@ -91,6 +94,25 @@ void LvsEffectManager::init(uint32_t count) {
   soa.effect_on_particle_death        = std::make_unique<void(*[])(void*)>(count);
   soa.effect_EFFECT_CUSTOM_EASE_FUNCTION = std::make_unique<float(*[])(float)>(count);
 
+  soa.effect_max_simultaneous_particles = std::make_unique<int[]>(count);
+  soa.effect_particle_pool_effect       = std::make_unique<int[]>(count);
+
+  // --- Particle pool ---
+  particleSoa.p_alive           = std::make_unique<bool[]>(max_particles_total);
+  particleSoa.p_effect_idx      = std::make_unique<int[]>(max_particles_total);
+  particleSoa.p_local_slot      = std::make_unique<int[]>(max_particles_total);
+  particleSoa.p_position        = std::make_unique<glm::vec2[]>(max_particles_total);
+  particleSoa.p_spawn_position  = std::make_unique<glm::vec2[]>(max_particles_total);
+  particleSoa.p_velocity        = std::make_unique<float[]>(max_particles_total);
+  particleSoa.p_direction       = std::make_unique<float[]>(max_particles_total);
+  particleSoa.p_angular_vel     = std::make_unique<float[]>(max_particles_total);
+  particleSoa.p_scale           = std::make_unique<glm::vec2[]>(max_particles_total);
+  particleSoa.p_color           = std::make_unique<glm::vec3[]>(max_particles_total);
+  particleSoa.p_opacity         = std::make_unique<float[]>(max_particles_total);
+  particleSoa.p_age             = std::make_unique<float[]>(max_particles_total);
+  particleSoa.p_lifetime        = std::make_unique<float[]>(max_particles_total);
+  particleSoa.p_delay_remaining = std::make_unique<float[]>(max_particles_total);
+
   for (uint32_t i = 0; i < count; ++i) {
     soa.free_slots.push_back(i);
   }
@@ -110,19 +132,19 @@ void LvsEffectManager::syncPropertiesWithSoA(int idx, LvsEffects::effectProperti
   }
 
   // --- Spawn / Emission ---
-  SYNC_VAL(props.particle_ending_position, soa.effect_particle_ending_position);
-  SYNC_VAL(props.emission_radius,          soa.effect_emission_radius);
-  SYNC_VAL(props.emission_arc,             soa.effect_emission_arc);
-  SYNC_VAL(props.emission_arc_offset,      soa.effect_emission_arc_offset);
-  SYNC_VAL(props.emit_from_edge,           soa.effect_emit_from_edge);
-  SYNC_VAL(props.spawn_rate,               soa.effect_spawn_rate);
-  SYNC_VAL(props.repetition,               soa.effect_repetition);
-  SYNC_VAL(props.reverse_on_finish,        soa.effect_reverse_on_finish);
+  SYNC_VAL(props.particle_ending_position,  soa.effect_particle_ending_position);
+  SYNC_VAL(props.emission_radius,           soa.effect_emission_radius);
+  SYNC_VAL(props.emission_arc,              soa.effect_emission_arc);
+  SYNC_VAL(props.emission_arc_offset,       soa.effect_emission_arc_offset);
+  SYNC_VAL(props.emit_from_edge,            soa.effect_emit_from_edge);
+  SYNC_VAL(props.spawn_rate,                soa.effect_spawn_rate);
+  SYNC_VAL(props.repetition,                soa.effect_repetition);
+  SYNC_VAL(props.reverse_on_finish,         soa.effect_reverse_on_finish);
   SYNC_VAL(props.max_presistent_particles,  soa.effect_max_presistent_particles);
 
   // --- Motion / Physics ---
   SYNC_VAL(props.particle_velocity_end,            soa.effect_particle_velocity_end);
-  SYNC_VAL(props.particle__acceleration,            soa.effect_particle__acceleration);
+  SYNC_VAL(props.particle__acceleration,           soa.effect_particle__acceleration);
   SYNC_VAL(props.gravity_strength,                 soa.effect_gravity_strength);
   SYNC_VAL(props.particle_direction_end,           soa.effect_particle_direction_end);
   SYNC_VAL(props.particle_angular_velocity,        soa.effect_particle_angular_velocity);
@@ -214,9 +236,7 @@ int LvsEffectManager::calculateMaxPresistentParticles(LvsEffects::effectProperti
   return result;
 }
 
-void LvsEffectManager::initalizeParticle(LvsEffects::effectProperties &props) {
-  props.max_presistent_particles = calculateMaxPresistentParticles(props);
-
+void LvsEffectManager::initalizeParticle(int effect_idx, int local_slot) {
 }
 
 int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
@@ -260,13 +280,21 @@ int LvsEffectManager::initializeEffect(LvsEffects::effectProperties effect) {
   effect.angular_velocity_variance = std::max(0.f, effect.angular_velocity_variance);
   effect.opacity_variance          = std::max(0.f, effect.opacity_variance);
 
-  
-
   int idx = soa.free_slots.back();
   soa.free_slots.pop_back();
   soa.active_indices.push_back(idx);
 
   syncPropertiesWithSoA(idx, effect, true);
+
+  int particleCap = calculateMaxPresistentParticles(effect);
+  soa.effect_max_simultaneous_particles[idx] = particleCap;
+  soa.effect_particle_pool_effect[idx]       = static_cast<int>(m_ParticlePoolCursor);
+  m_ParticlePoolCursor += static_cast<uint32_t>(particleCap);
+
+  m_ParticleFreeSlots[idx].resize(particleCap);
+  for (int i = 0; i < particleCap; ++i) {
+    m_ParticleFreeSlots[idx][i] = i;
+  }
 
   return idx;
 }
