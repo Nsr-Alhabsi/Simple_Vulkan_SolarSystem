@@ -1,5 +1,5 @@
 #include "simple_render_system.hpp"
-#include "../visuals/lvs_effect_manager.hpp"
+#include "../visuals/effects/lvs_effect_manager.hpp"
 #include "../ADDONS/cp_color.hpp"
 #include "../ADDONS/json_setup.hpp"
 

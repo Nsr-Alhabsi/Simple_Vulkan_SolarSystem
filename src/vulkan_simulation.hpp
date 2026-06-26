@@ -5,7 +5,7 @@
 #include "models/lvs_renderer.hpp"
 #include "models/properties/lvs_game_animations.hpp"
 
-#include "visuals/lvs_effect_manager.hpp"
+#include "visuals/effects/lvs_effect_manager.hpp"
 
 #include <nlohmann/json.hpp>
 #include <glm/gtc/constants.hpp>
