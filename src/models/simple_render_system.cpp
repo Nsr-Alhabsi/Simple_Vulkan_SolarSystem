@@ -20,6 +20,7 @@ struct simplePushConstantData {
   
   alignas(8) glm::vec2 gradDir;
   alignas(4) int useGradient;
+  float opacity{1.f};
 };
 
 namespace lvs { // lvs stands for large - vulkan - simulation
@@ -118,13 +119,14 @@ void SimpleRenderSystem::renderParticles(VkCommandBuffer commandBuffer, LvsEffec
 
       glm::vec2 pos   = particleSoa.p_position[abs];
       glm::vec2 scale = particleSoa.p_scale[abs];
-      glm::vec3 color = particleSoa.p_color[abs] * particleSoa.p_opacity[abs];
+      glm::vec3 color = particleSoa.p_color[abs];
 
       simplePushConstantData push{};
       push.color1      = color;
       push.color2      = tmpl->color2;
       push.gradDir     = tmpl->gradDir;
       push.useGradient = tmpl->isGradient ? 1 : 0;
+      push.opacity     = particleSoa.p_opacity[abs];
 
       glm::mat4 t{1.f};
       t[0][0] = scale.x;

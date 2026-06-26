@@ -12,6 +12,7 @@ layout(push_constant) uniform Push {
     layout(offset = 80) vec3 color2;
     layout(offset = 96) vec2 gradDir;
     layout(offset = 104) int useGradient;
+    layout(offset = 108) float opacity;
 } push;
 
 void main() {
@@ -24,8 +25,8 @@ void main() {
   if (push.useGradient == 1) {
     float t = clamp(dot(fragUV - 0.5, normalize(push.gradDir)) + 0.5, 0.0, 1.0);
     vec3 finalColor = mix(push.color1, push.color2, t);
-    outColor = vec4(finalColor, 1.0);
+    outColor = vec4(finalColor, push.opacity);
   } else {
-    outColor = vec4(push.color1, 1.0);
+    outColor = vec4(push.color1, push.opacity);
   }
 }

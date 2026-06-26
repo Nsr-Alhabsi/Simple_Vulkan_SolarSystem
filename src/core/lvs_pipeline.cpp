@@ -157,9 +157,9 @@ void LvsPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
   configInfo.multisampleInfo.rasterizationSamples      = VK_SAMPLE_COUNT_1_BIT;
 
   configInfo.colorBlendAttachment.colorWriteMask       = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-  configInfo.colorBlendAttachment.blendEnable          = VK_FALSE;
-  configInfo.colorBlendAttachment.srcColorBlendFactor  = VK_BLEND_FACTOR_ONE;
-  configInfo.colorBlendAttachment.dstColorBlendFactor  = VK_BLEND_FACTOR_ZERO;
+  configInfo.colorBlendAttachment.blendEnable          = VK_TRUE;
+  configInfo.colorBlendAttachment.srcColorBlendFactor  = VK_BLEND_FACTOR_SRC_ALPHA;
+  configInfo.colorBlendAttachment.dstColorBlendFactor  = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
   configInfo.colorBlendAttachment.colorBlendOp         = VK_BLEND_OP_ADD;
   configInfo.colorBlendAttachment.srcAlphaBlendFactor  = VK_BLEND_FACTOR_ONE;
   configInfo.colorBlendAttachment.dstAlphaBlendFactor  = VK_BLEND_FACTOR_ZERO;
@@ -178,7 +178,7 @@ void LvsPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
   configInfo.depthStencilInfo.sType                    = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
   configInfo.depthStencilInfo.depthTestEnable          = VK_TRUE;
   configInfo.depthStencilInfo.depthWriteEnable         = VK_TRUE;
-  configInfo.depthStencilInfo.depthCompareOp           = VK_COMPARE_OP_LESS;
+  configInfo.depthStencilInfo.depthCompareOp           = VK_COMPARE_OP_LESS_OR_EQUAL;
   configInfo.depthStencilInfo.depthBoundsTestEnable    = VK_FALSE;
   configInfo.depthStencilInfo.minDepthBounds           = 0.0f; // Optional
   configInfo.depthStencilInfo.maxDepthBounds           = 1.0f; // Optional
