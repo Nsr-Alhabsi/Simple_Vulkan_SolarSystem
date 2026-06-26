@@ -8,7 +8,7 @@
 #include "core/lvs_SoA_effects.hpp"
 #include "lvs_particle_system.hpp"
 
-#include "../core/lvs_device.hpp"
+#include "../../core/lvs_device.hpp"
 
 #include <random>
 

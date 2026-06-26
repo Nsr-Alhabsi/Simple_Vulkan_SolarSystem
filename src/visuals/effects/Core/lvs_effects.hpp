@@ -4,8 +4,8 @@
 //  INCLUDES
 // ============================================================
 
-#include "../../utils/easing_functions.hpp"
-#include "../../models/lvs_game_object.hpp"
+#include "../../../utils/easing_functions.hpp"
+#include "../../../models/lvs_game_object.hpp"
 
 #include <glm/glm.hpp>
 

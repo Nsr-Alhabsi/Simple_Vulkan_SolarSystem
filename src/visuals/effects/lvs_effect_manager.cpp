@@ -6,7 +6,7 @@
 
 #include "core/lvs_effects.hpp"
 
-#include "../ADDONS/cp_color.hpp"
+#include "../../ADDONS/cp_color.hpp"
 
 #include <iostream>
 #include <algorithm>
