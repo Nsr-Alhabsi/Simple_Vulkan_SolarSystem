@@ -44,6 +44,7 @@ public:
 
   LvsGameObject() : id{0} {}
   static LvsGameObject createGameObject(int typeOfObject, LvsDevice& device);
+  static std::vector<LvsModel::Vertex> getObjectVertices(id_t id);
 
   glm::mat3 getGlobalMatrix(std::unordered_map<unsigned int, LvsGameObject>& objectList);
 

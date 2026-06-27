@@ -8,6 +8,7 @@ namespace lvs {
 static std::shared_ptr<LvsModel> circleModel = nullptr;
 static std::shared_ptr<LvsModel> triangleModel = nullptr;
 static std::shared_ptr<LvsModel> squareModel = nullptr;
+static std::unordered_map<LvsGameObject::id_t, int> s_ObjectTypeMap;
 
 std::vector<LvsModel::Vertex> LvsGameObject::createObjectVertices(int typeOfObject) {
   std::vector<LvsModel::Vertex> vertices;
@@ -55,6 +56,7 @@ std::vector<LvsModel::Vertex> LvsGameObject::createObjectVertices(int typeOfObje
       glm::vec2 tr = {w2, -h2};
       glm::vec2 bl = {-w2, h2};
       glm::vec2 br = {w2, h2};
+      
       // UVs: tl{0,0}, tr{1,0}, bl{0,1}, br{1,1}
       vertices.push_back({tl, {1,1,1}, {0.f, 0.f}});
       vertices.push_back({tr, {1,1,1}, {1.f, 0.f}});
@@ -79,6 +81,7 @@ LvsGameObject LvsGameObject::createGameObject(int typeOfObject, LvsDevice& devic
     }
     LvsGameObject obj{currentId++};
     obj.model = circleModel;
+    s_ObjectTypeMap[obj.id] = 0;
     return obj;
   }
 
@@ -89,6 +92,7 @@ LvsGameObject LvsGameObject::createGameObject(int typeOfObject, LvsDevice& devic
     }
     LvsGameObject obj{currentId++};
     obj.model = triangleModel;
+    s_ObjectTypeMap[obj.id] = 1;
     return obj;
   }
 
@@ -98,7 +102,14 @@ LvsGameObject LvsGameObject::createGameObject(int typeOfObject, LvsDevice& devic
   }
   LvsGameObject obj{currentId++};
   obj.model = squareModel;
+  s_ObjectTypeMap[obj.id] = 2;
   return obj;
+}
+
+std::vector<LvsModel::Vertex> LvsGameObject::getObjectVertices(id_t id) {
+  auto it = s_ObjectTypeMap.find(id);
+  if (it == s_ObjectTypeMap.end()) return {};
+  return createObjectVertices(it->second);
 }
 
 glm::mat3 LvsGameObject::getGlobalMatrix(std::unordered_map<id_t, LvsGameObject>& objectList) {
