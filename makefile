@@ -17,8 +17,10 @@ SOURCES := $(wildcard $(SRC_DIR)/*.cpp) \
            $(wildcard $(SRC_DIR)/ADDONS/*.cpp) \
 					 $(wildcard $(SRC_DIR)/models/properties/*.cpp) \
 					 $(wildcard $(SRC_DIR)/models/utils/*.cpp) \
-					 $(wildcard $(SRC_DIR)/visuals/*.cpp) \
-					 $(wildcard $(SRC_DIR)/visuals/Core/*.cpp)
+					 $(wildcard $(SRC_DIR)/visuals/effects/*.cpp) \
+					 $(wildcard $(SRC_DIR)/visuals/effects/Core/*.cpp) \
+					 $(wildcard $(SRC_DIR)/visuals/morph/*.cpp) \
+					 $(wildcard $(SRC_DIR)/visuals/morph/Core/*.cpp)
 
 # This converts src/core/file.cpp to build/core/file.o
 OBJECTS := $(SOURCES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
