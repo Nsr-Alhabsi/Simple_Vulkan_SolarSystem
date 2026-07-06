@@ -8,21 +8,21 @@
 namespace lvs {
 
 int LvsEffects::setEffect(effectProperties effect) {
-    m_EffectIdx = m_Manager.initializeEffect(effect);
-    return m_EffectIdx;
+  m_EffectIdx = m_Manager.initializeEffect(effect);
+  return m_EffectIdx;
 }
 
 void LvsEffects::pauseEffect(int idx) {
-    m_Manager.pauseEffect(idx);
+  m_Manager.pauseEffect(idx);
 }
 
 void LvsEffects::continueEffect(int idx) {
-    m_Manager.continueEffect(idx);
+  m_Manager.continueEffect(idx);
 }
 
 void LvsEffects::deleteEffect(int idx) {
-    m_Manager.deleteEffect(idx);
-    if (idx == m_EffectIdx) m_EffectIdx = -1;
+  m_Manager.deleteEffect(idx);
+  if (idx == m_EffectIdx) m_EffectIdx = -1;
 }
 
 } // namespace lvs

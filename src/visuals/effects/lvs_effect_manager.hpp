@@ -36,142 +36,142 @@ namespace lvs {
 class LvsEffectManager {
 public:
 
-    // ------------------------------------------------------------
-    //  CONSTRUCTORS / DESTRUCTOR
-    // ------------------------------------------------------------
+  // ------------------------------------------------------------
+  //  CONSTRUCTORS / DESTRUCTOR
+  // ------------------------------------------------------------
 
-    /**
-     * @brief Constructs the manager, binding it to a Vulkan device.
-     * @param device Vulkan device used for any GPU-side operations.
-     */
-    LvsEffectManager(LvsDevice& device)
-        : lvsDevice{device}, m_Rng{std::random_device{}()}, particleSystem{soa, particleSoa, m_Rng} {}
+  /**
+   * @brief Constructs the manager, binding it to a Vulkan device.
+   * @param device Vulkan device used for any GPU-side operations.
+   */
+  LvsEffectManager(LvsDevice& device)
+      : lvsDevice{device}, m_Rng{std::random_device{}()}, particleSystem{soa, particleSoa, m_Rng} {}
 
-    // ------------------------------------------------------------
-    //  PUBLIC API
-    // ------------------------------------------------------------
+  // ------------------------------------------------------------
+  //  PUBLIC API
+  // ------------------------------------------------------------
 
-    /**
-     * @brief Allocates all SoA arrays and initializes pool bookkeeping.
-     *
-     * Must be called once before any other method. Calling it a second time
-     * would leak the previously allocated arrays.
-     *
-     * @param count               Maximum number of concurrent effects.
-     * @param max_particles_total Maximum number of particles that can be alive across all effects.
-     */
-    void init(uint32_t count, uint32_t max_particles_total);
+  /**
+   * @brief Allocates all SoA arrays and initializes pool bookkeeping.
+   *
+   * Must be called once before any other method. Calling it a second time
+   * would leak the previously allocated arrays.
+   *
+   * @param count               Maximum number of concurrent effects.
+   * @param max_particles_total Maximum number of particles that can be alive across all effects.
+   */
+  void init(uint32_t count, uint32_t max_particles_total);
 
-    /**
-     * @brief Validates, clamps, and registers a new effect into the pool.
-     *
-     * Derives the per-effect particle cap via calculateMaxPresistentParticles(),
-     * carves out a slice of the flat particle pool with the bump allocator, and
-     * writes all properties into the SoA via syncPropertiesWithSoA().
-     *
-     * @param effect User-populated effectProperties describing the desired effect.
-     * @return The SoA slot index assigned to this effect; pass to pause/continue/delete.
-     */
-    int initializeEffect(LvsEffects::effectProperties effect);
+  /**
+   * @brief Validates, clamps, and registers a new effect into the pool.
+   *
+   * Derives the per-effect particle cap via calculateMaxPresistentParticles(),
+   * carves out a slice of the flat particle pool with the bump allocator, and
+   * writes all properties into the SoA via syncPropertiesWithSoA().
+   *
+   * @param effect User-populated effectProperties describing the desired effect.
+   * @return The SoA slot index assigned to this effect; pass to pause/continue/delete.
+   */
+  int initializeEffect(LvsEffects::effectProperties effect);
 
-    /**
-     * @brief Advances a single effect by one timestep.
-     *
-     * Handles loop-delay countdown, burst or continuous spawning, per-particle
-     * physics updates, lifetime expiry, and the on_effect_finish callback.
-     *
-     * @param effect_idx SoA slot index of the effect to update.
-     * @param dt         Delta time in seconds since the last frame.
-     */
-    void updateEffect(int effect_idx, float dt);
+  /**
+   * @brief Advances a single effect by one timestep.
+   *
+   * Handles loop-delay countdown, burst or continuous spawning, per-particle
+   * physics updates, lifetime expiry, and the on_effect_finish callback.
+   *
+   * @param effect_idx SoA slot index of the effect to update.
+   * @param dt         Delta time in seconds since the last frame.
+   */
+  void updateEffect(int effect_idx, float dt);
 
-    /**
-     * @brief Advances all active effects by one timestep.
-     * @param dt Delta time in seconds since the last frame.
-     */
-    void updateEffects(float dt);
+  /**
+   * @brief Advances all active effects by one timestep.
+   * @param dt Delta time in seconds since the last frame.
+   */
+  void updateEffects(float dt);
 
-    /**
-     * @brief Suspends an effect so it stops spawning and updating.
-     * @param idx SoA slot index of the effect to pause.
-     */
-    void pauseEffect(int idx);
+  /**
+   * @brief Suspends an effect so it stops spawning and updating.
+   * @param idx SoA slot index of the effect to pause.
+   */
+  void pauseEffect(int idx);
 
-    /**
-     * @brief Resumes a previously paused effect.
-     * @param idx SoA slot index of the effect to resume.
-     */
-    void continueEffect(int idx);
+  /**
+   * @brief Resumes a previously paused effect.
+   * @param idx SoA slot index of the effect to resume.
+   */
+  void continueEffect(int idx);
 
-    /**
-     * @brief Kills all live particles belonging to an effect and returns its slot to the pool.
-     * @param idx SoA slot index of the effect to delete.
-     */
-    void deleteEffect(int idx);
+  /**
+   * @brief Kills all live particles belonging to an effect and returns its slot to the pool.
+   * @param idx SoA slot index of the effect to delete.
+   */
+  void deleteEffect(int idx);
 
-    /**
-     * @brief Returns a read-only view of the effect SoA arrays.
-     * @return Const reference to LvsSOAEffects.
-     */
-    const LvsSOAEffects&   getEffectSoA()   const { return soa; }
+  /**
+   * @brief Returns a read-only view of the effect SoA arrays.
+   * @return Const reference to LvsSOAEffects.
+   */
+  const LvsSOAEffects&   getEffectSoA()   const { return soa; }
 
-    /**
-     * @brief Returns a read-only view of the particle SoA arrays.
-     * @return Const reference to LvsSOAParticles.
-     */
-    const LvsSOAParticles& getParticleSoA() const { return particleSoa; }
+  /**
+   * @brief Returns a read-only view of the particle SoA arrays.
+   * @return Const reference to LvsSOAParticles.
+   */
+  const LvsSOAParticles& getParticleSoA() const { return particleSoa; }
 
-    /**
-     * @brief Reads a single field from a live effect's SoA state.
-     *
-     * Reconstructs a temporary effectProperties from the SoA and returns
-     * the requested member. Explicit instantiations cover float, int, bool,
-     * glm::vec2, glm::vec3, uint32_t, EaseType, and LvsGameObject*.
-     *
-     * @tparam T         Type of the field to retrieve.
-     * @param  idx       SoA slot index of the effect.
-     * @param  field     Pointer-to-member selecting which effectProperties field to read.
-     * @return           Current value of that field in the SoA.
-     */
-    template<typename T>
-    T getEffectProperties(int idx, T LvsEffects::effectProperties::* field);
+  /**
+   * @brief Reads a single field from a live effect's SoA state.
+   *
+   * Reconstructs a temporary effectProperties from the SoA and returns
+   * the requested member. Explicit instantiations cover float, int, bool,
+   * glm::vec2, glm::vec3, uint32_t, EaseType, and LvsGameObject*.
+   *
+   * @tparam T         Type of the field to retrieve.
+   * @param  idx       SoA slot index of the effect.
+   * @param  field     Pointer-to-member selecting which effectProperties field to read.
+   * @return           Current value of that field in the SoA.
+   */
+  template<typename T>
+  T getEffectProperties(int idx, T LvsEffects::effectProperties::* field);
 
 private:
 
-    // ------------------------------------------------------------
-    //  PRIVATE MEMBERS
-    // ------------------------------------------------------------
+  // ------------------------------------------------------------
+  //  PRIVATE MEMBERS
+  // ------------------------------------------------------------
 
-    uint32_t m_MaxEffects;
-    uint32_t m_MaxParticles;
-    uint32_t m_ParticlePoolCursor;
+  uint32_t m_MaxEffects;
+  uint32_t m_MaxParticles;
+  uint32_t m_ParticlePoolCursor;
 
-    LvsSOAEffects   soa;
-    LvsSOAParticles particleSoa;
+  LvsSOAEffects   soa;
+  LvsSOAParticles particleSoa;
 
-    // Per-effect free list of available local particle slots within the
-    // sub-range carved out for that effect.
-    std::vector<std::vector<int>> m_ParticleFreeSlots;
+  // Per-effect free list of available local particle slots within the
+  // sub-range carved out for that effect.
+  std::vector<std::vector<int>> m_ParticleFreeSlots;
 
-    std::mt19937     m_Rng;
-    LvsDevice&       lvsDevice;
-    LvsParticleSystem particleSystem;
+  std::mt19937     m_Rng;
+  LvsDevice&       lvsDevice;
+  LvsParticleSystem particleSystem;
 
-    // ------------------------------------------------------------
-    //  PRIVATE HELPERS
-    // ------------------------------------------------------------
+  // ------------------------------------------------------------
+  //  PRIVATE HELPERS
+  // ------------------------------------------------------------
 
-    // Derives the maximum number of concurrently alive particles for an
-    // effect based on its spawn rate, duration, burst settings, and mode.
-    int calculateMaxPresistentParticles(LvsEffects::effectProperties &props);
+  // Derives the maximum number of concurrently alive particles for an
+  // effect based on its spawn rate, duration, burst settings, and mode.
+  int calculateMaxPresistentParticles(LvsEffects::effectProperties &props);
 
-    // Pops the next available local slot from the effect's free list and
-    // delegates to LvsParticleSystem::initalizeParticle.
-    void spawnParticle(int effect_idx);
+  // Pops the next available local slot from the effect's free list and
+  // delegates to LvsParticleSystem::initalizeParticle.
+  void spawnParticle(int effect_idx);
 
-    // Bridges an effectProperties struct and the parallel SoA arrays.
-    // writeToSOA == true copies struct → SoA; false copies SoA → struct.
-    void syncPropertiesWithSoA(int idx, LvsEffects::effectProperties &props, bool writeToSOA);
+  // Bridges an effectProperties struct and the parallel SoA arrays.
+  // writeToSOA == true copies struct → SoA; false copies SoA → struct.
+  void syncPropertiesWithSoA(int idx, LvsEffects::effectProperties &props, bool writeToSOA);
 };
 
 } // namespace lvs
