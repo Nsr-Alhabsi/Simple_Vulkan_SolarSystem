@@ -4,7 +4,8 @@
 //  INCLUDES
 // ============================================================
 
-#include "lvs_morph.hpp"
+#include "lvs_morph_types.hpp"
+#include "../../../utils/easing_functions.hpp"
 
 // std:
 #include <memory>
