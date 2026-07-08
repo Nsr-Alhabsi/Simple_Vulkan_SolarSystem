@@ -14,9 +14,84 @@ namespace lvs {
 //  PUBLIC METHODS
 // ============================================================
 
+void LvsMorph::init(uint32_t count) {
+  m_MaxMorphs = count;
+
+  // --- General ---
+  soa.morph_EASE                       = std::make_unique<LvsEasingFunctions::EaseType[]>(count);
+  soa.morph_MORPH_CUSTOM_EASE_FUNCTION = std::make_unique<float(*[])(float)>(count);
+  soa.morph_active                     = std::make_unique<bool[]>(count);
+
+  // --- Core timing ---
+  soa.morph_duration             = std::make_unique<float[]>(count);
+  soa.morph_duration_variance    = std::make_unique<float[]>(count);
+  soa.morph_delay                = std::make_unique<float[]>(count);
+  soa.morph_delay_variance       = std::make_unique<float[]>(count);
+  soa.morph_step_delay           = std::make_unique<float[]>(count);
+  soa.morph_step_delay_variance  = std::make_unique<float[]>(count);
+  soa.morph_hold_at_end_duration = std::make_unique<float[]>(count);
+
+  // --- Sequencing ---
+  soa.morph_sequence_mode             = std::make_unique<MorphSequenceMode[]>(count);
+  soa.morph_start_index               = std::make_unique<int[]>(count);
+  soa.morph_end_index                 = std::make_unique<int[]>(count);
+  soa.morph_snap_to_start_immediately = std::make_unique<bool[]>(count);
+
+  // --- Repetition ---
+  soa.morph_repetition        = std::make_unique<int[]>(count);
+  soa.morph_reverse_on_finish = std::make_unique<bool[]>(count);
+  soa.morph_loop_delay        = std::make_unique<float[]>(count);
+  soa.morph_destroy_on_finish = std::make_unique<bool[]>(count);
+
+  // --- Vertex interpolation control ---
+  soa.morph_position_ease                 = std::make_unique<LvsEasingFunctions::EaseType[]>(count);
+  soa.morph_position_custom_ease_function = std::make_unique<float(*[])(float)>(count);
+  soa.morph_vertex_colors                 = std::make_unique<bool[]>(count);
+  soa.morph_color_ease                    = std::make_unique<LvsEasingFunctions::EaseType[]>(count);
+  soa.morph_color_custom_ease_function    = std::make_unique<float(*[])(float)>(count);
+  soa.morph_vertex_uvs                    = std::make_unique<bool[]>(count);
+  soa.morph_uv_ease                       = std::make_unique<LvsEasingFunctions::EaseType[]>(count);
+  soa.morph_uv_custom_ease_function       = std::make_unique<float(*[])(float)>(count);
+  soa.morph_vertex_match_mode             = std::make_unique<MorphVertexMatchMode[]>(count);
+
+  // --- Runtime / query fields ---
+  soa.morph_MORPH_STATE           = std::make_unique<MorphState[]>(count);
+  soa.morph_normalized_progress   = std::make_unique<float[]>(count);
+  soa.morph_elapsed_time          = std::make_unique<float[]>(count);
+  soa.morph_elapsed_delay_time    = std::make_unique<float[]>(count);
+  soa.morph_current_from_index    = std::make_unique<int[]>(count);
+  soa.morph_current_to_index      = std::make_unique<int[]>(count);
+  soa.morph_current_repetition    = std::make_unique<int[]>(count);
+  soa.morph_loop_delay_remaining  = std::make_unique<float[]>(count);
+  soa.morph_step_delay_remaining  = std::make_unique<float[]>(count);
+  soa.morph_delay_finished        = std::make_unique<bool[]>(count);
+  soa.morph_total_steps_completed = std::make_unique<int[]>(count);
+
+  // --- Callbacks ---
+  soa.morph_callback_data     = std::make_unique<void*[]>(count);
+  soa.morph_on_morph_start    = std::make_unique<void(*[])(void*)>(count);
+  soa.morph_on_step_complete  = std::make_unique<void(*[])(int, void*)>(count);
+  soa.morph_on_morph_complete = std::make_unique<void(*[])(void*)>(count);
+
+  // --- Randomness ---
+  soa.morph_random_seed = std::make_unique<uint32_t[]>(count);
+
+  soa.free_slots.clear();
+  soa.free_slots.reserve(count);
+  for (uint32_t i = 0; i < count; ++i) {
+    soa.free_slots.push_back(i);
+  }
+}
 
 int LvsMorph::morphObject(VertexList  &verticesList, morphProperties &props) {
   if (checkMorphProperties(props, verticesList)) {
+    if (soa.free_slots.empty()) {
+      std::cerr << cpc::Red << "[LvsMorph::morphObject] No free morph slots available (pool size "
+                << m_MaxMorphs << "). Fix: call LvsMorph::init() with a larger count before registering more "
+                "morphs, or free existing slots." << cpc::Reset << std::endl;
+      return -1;
+    }
+
     int id = soa.free_slots.back();
     soa.free_slots.pop_back();
     soa.active_indices.push_back(id);
@@ -24,7 +99,7 @@ int LvsMorph::morphObject(VertexList  &verticesList, morphProperties &props) {
     syncSoAProperties(props, id);
     return id;
   }
-  
+
   std::cerr << "LvsMorph::morphObject failed due to critical issues in morphProperties or verticesList. See above for details." << std::endl;
   return -1;
 }

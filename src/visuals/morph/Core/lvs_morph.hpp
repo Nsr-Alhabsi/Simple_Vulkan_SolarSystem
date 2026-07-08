@@ -217,6 +217,16 @@ public:
   };
 
   /**
+   * @brief Allocates all SoA arrays and initializes pool bookkeeping.
+   *
+   * Must be called once before any call to morphObject(). Calling it a second
+   * time would leak the previously allocated arrays.
+   *
+   * @param count Maximum number of concurrent morph slots.
+   */
+  void init(uint32_t count);
+
+  /**
    * @brief Registers and drives a per-frame vertex morph on the supplied vertex list.
    *
    * Each call advances the morph by one frame tick according to `props`. The system
@@ -226,11 +236,15 @@ public:
    * @param verticesList Ordered list of vertex arrays; each entry is one target shape.
    *                     The morph sequences through these according to `props.sequence_mode`.
    * @param props        Morph configuration and runtime state. Mutated in-place each frame.
+   * @return The SoA slot index assigned to this morph, or -1 if registration failed
+   *         (invalid properties, or the pool is exhausted / init() was never called).
    */
   int morphObject(std::vector<std::vector<LvsModel::Vertex>> &verticesList, morphProperties &props);
 
 private:
   using VertexList = std::vector<std::vector<LvsModel::Vertex>>;
+
+  uint32_t m_MaxMorphs = 0;
 
   LvsSOAMorphs soa;
 
