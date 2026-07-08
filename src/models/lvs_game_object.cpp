@@ -1,6 +1,8 @@
 #include "lvs_game_object.hpp"
+#include "../ADDONS/cp_color.hpp"
 
 // std:
+#include <stdexcept>
 #include <unordered_map>
 
 namespace lvs {
@@ -71,10 +73,23 @@ std::vector<LvsModel::Vertex> LvsGameObject::createObjectVertices(int typeOfObje
   return vertices;
 }
 
-LvsGameObject LvsGameObject::createGameObject(int typeOfObject, LvsDevice& device) {
+LvsGameObject LvsGameObject::createGameObject(int typeOfObject, LvsDevice& device, std::vector<LvsModel::Vertex> *customVertices) {
   static id_t currentId = 0;
 
-  if (typeOfObject == 0) {
+  if (typeOfObject == ObjectType::Custom) {
+    if (!customVertices || customVertices->empty() || customVertices->size() % 3 != 0) {
+      throw std::runtime_error(cpc::Red + "Cannot create custom game object: customVertices must be non-null, "
+                                "non-empty, and a multiple of 3 (triangle list topology)." + cpc::Reset);
+    }
+
+    auto customModel = std::make_shared<LvsModel>(device, *customVertices);
+    LvsGameObject obj{currentId++};
+    obj.model = customModel;
+    s_ObjectTypeMap[obj.id] = ObjectType::Custom;
+    return obj;
+  }
+
+  if (typeOfObject == ObjectType::Circle) {
     if (!circleModel) {
       auto vertices = LvsGameObject::createObjectVertices(0);
       circleModel = std::make_shared<LvsModel>(device, vertices);
@@ -85,7 +100,7 @@ LvsGameObject LvsGameObject::createGameObject(int typeOfObject, LvsDevice& devic
     return obj;
   }
 
-  if (typeOfObject == 1) {
+  if (typeOfObject == ObjectType::Triangle) {
     if (!triangleModel) {
       auto vertices = LvsGameObject::createObjectVertices(1);
       triangleModel = std::make_shared<LvsModel>(device, vertices);
@@ -96,14 +111,18 @@ LvsGameObject LvsGameObject::createGameObject(int typeOfObject, LvsDevice& devic
     return obj;
   }
 
-  if (!squareModel) {
-    auto vertices = LvsGameObject::createObjectVertices(2);
-    squareModel = std::make_shared<LvsModel>(device, vertices);
+  if (typeOfObject == ObjectType::Square) {
+    if (!squareModel) {
+      auto vertices = LvsGameObject::createObjectVertices(2);
+      squareModel = std::make_shared<LvsModel>(device, vertices);
+    }
+    LvsGameObject obj{currentId++};
+    obj.model = squareModel;
+    s_ObjectTypeMap[obj.id] = 2;
+    return obj;
   }
-  LvsGameObject obj{currentId++};
-  obj.model = squareModel;
-  s_ObjectTypeMap[obj.id] = 2;
-  return obj;
+
+  throw std::invalid_argument("Invalid object type");
 }
 
 std::vector<LvsModel::Vertex> LvsGameObject::getObjectVertices(id_t id) {

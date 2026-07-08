@@ -34,6 +34,7 @@ class LvsGameObject {
 public:
   struct ObjectType {
     enum {
+      Custom = -1,
       Circle = 0,
       Triangle = 1,
       Square = 2
@@ -43,7 +44,7 @@ public:
   using id_t = unsigned int;
 
   LvsGameObject() : id{0} {}
-  static LvsGameObject createGameObject(int typeOfObject, LvsDevice& device);
+  static LvsGameObject createGameObject(int typeOfObject, LvsDevice& device, std::vector<LvsModel::Vertex> *customVertices = nullptr);
   static std::vector<LvsModel::Vertex> getObjectVertices(id_t id);
 
   glm::mat3 getGlobalMatrix(std::unordered_map<unsigned int, LvsGameObject>& objectList);
