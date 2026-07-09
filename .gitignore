@@ -2,4 +2,5 @@ build/*.exe
 build/**/*.o
 .claude/
 .vscode/
+.github/
 CLAUDE.md
