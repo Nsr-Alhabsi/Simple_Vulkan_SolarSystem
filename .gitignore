@@ -3,4 +3,5 @@ build/**/*.o
 .claude/
 .vscode/
 .github/
+.gitignore
 CLAUDE.md
