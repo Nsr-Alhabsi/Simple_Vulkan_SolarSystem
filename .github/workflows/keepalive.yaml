@@ -1,0 +1,23 @@
+name: keepalive
+
+on:
+  schedule:
+    - cron: '17 21 * * *'   # 21:17 UTC = 01:17 Muscat (next day)
+  workflow_dispatch:         # lets you trigger it manually from the Actions tab
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.KEEPALIVE_PAT }}
+          fetch-depth: 0
+
+      - name: Empty commit and push
+        run: |
+          git config user.name  "Nsr-Alhabsi"
+          git config user.email "253266130+Nsr-Alhabsi@users.noreply.github.com"
+          git commit --allow-empty -m "keepalive: $(date -u +%Y-%m-%d)"
+          git push
