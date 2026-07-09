@@ -122,6 +122,15 @@ public:
   const LvsSOAParticles& getParticleSoA() const { return particleSoa; }
 
   /**
+   * @brief Reads every property of a live effect back out of the SoA.
+   *
+   * @param idx SoA slot index of the effect.
+   * @return    An effectProperties struct reconstructed from the SoA.
+   * @throws std::runtime_error if idx is out of range for the allocated pool.
+   */
+  LvsEffects::effectProperties getEffectProperties(int idx);
+
+  /**
    * @brief Reads a single field from a live effect's SoA state.
    *
    * Reconstructs a temporary effectProperties from the SoA and returns
@@ -132,6 +141,7 @@ public:
    * @param  idx       SoA slot index of the effect.
    * @param  field     Pointer-to-member selecting which effectProperties field to read.
    * @return           Current value of that field in the SoA.
+   * @throws std::runtime_error if idx is out of range for the allocated pool.
    */
   template<typename T>
   T getEffectProperties(int idx, T LvsEffects::effectProperties::* field);
@@ -172,6 +182,10 @@ private:
   // Bridges an effectProperties struct and the parallel SoA arrays.
   // writeToSOA == true copies struct → SoA; false copies SoA → struct.
   void syncPropertiesWithSoA(int idx, LvsEffects::effectProperties &props, bool writeToSOA);
+
+  // Throws if idx is outside the allocated pool; warns (non-fatal) if idx is
+  // in range but not a currently active effect slot.
+  void validateEffectIndex(int idx, const char* callerName) const;
 };
 
 } // namespace lvs

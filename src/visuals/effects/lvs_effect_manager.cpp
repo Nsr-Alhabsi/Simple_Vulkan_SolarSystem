@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <stdexcept>
 
 namespace lvs {
 
@@ -231,8 +232,16 @@ void LvsEffectManager::deleteEffect(int idx) {
   soa.effect_active[idx] = false;
 }
 
+LvsEffects::effectProperties LvsEffectManager::getEffectProperties(int idx) {
+  validateEffectIndex(idx, "LvsEffectManager::getEffectProperties");
+  LvsEffects::effectProperties props;
+  syncPropertiesWithSoA(idx, props, false);
+  return props;
+}
+
 template<typename T>
 T LvsEffectManager::getEffectProperties(int idx, T LvsEffects::effectProperties::* field) {
+  validateEffectIndex(idx, "LvsEffectManager::getEffectProperties");
   LvsEffects::effectProperties props;
   syncPropertiesWithSoA(idx, props, false);
   return props.*field;
@@ -461,6 +470,22 @@ void LvsEffectManager::spawnParticle(int effect_idx) {
   int local_slot = m_ParticleFreeSlots[effect_idx].back();
   m_ParticleFreeSlots[effect_idx].pop_back();
   particleSystem.initalizeParticle(effect_idx, local_slot);
+}
+
+void LvsEffectManager::validateEffectIndex(int idx, const char* callerName) const {
+  if (idx < 0 || idx >= (int)m_MaxEffects) {
+    throw std::runtime_error(cpc::Red + "[" + callerName + "] idx (" + std::to_string(idx) +
+      ") is out of range for the effect pool (valid range is 0 to " + std::to_string(m_MaxEffects - 1) +
+      "). Fix: pass a valid SoA slot index returned by LvsEffectManager::initializeEffect()." + cpc::Reset);
+  }
+
+  bool isActive = std::find(soa.active_indices.begin(), soa.active_indices.end(), idx) != soa.active_indices.end();
+  if (!isActive) {
+    std::cerr << cpc::Yellow << "[" << callerName << "] idx (" << idx << ") is within range but is not a "
+      "currently active effect slot (it may have been deleted, or initializeEffect() was never called for it). "
+      "The returned value will reflect stale or default data. Fix: verify idx was returned by a successful "
+      "initializeEffect() call and has not since been deleted." << cpc::Reset << std::endl;
+  }
 }
 
 } // namespace lvs
