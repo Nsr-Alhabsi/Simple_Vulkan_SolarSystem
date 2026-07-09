@@ -7,6 +7,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 namespace lvs {
 
@@ -102,6 +103,45 @@ int LvsMorph::morphObject(VertexList  &verticesList, morphProperties &props) {
 
   std::cerr << "LvsMorph::morphObject failed due to critical issues in morphProperties or verticesList. See above for details." << std::endl;
   return -1;
+}
+
+LvsMorph::morphProperties LvsMorph::getMorphProperty(int idx) {
+  validateMorphIndex(idx, "LvsMorph::getMorphProperty");
+  morphProperties props;
+  syncSoAProperties(props, idx, false);
+  return props; // NOTE: MORPH_NAME is always "" here — not stored in the SoA by design.
+}
+
+template<typename T>
+T LvsMorph::getMorphProperty(int idx, T morphProperties::* field) {
+  static_assert(!std::is_same<T, std::string>::value,
+    "LvsMorph::getMorphProperty<std::string>: MORPH_NAME is not stored in the SoA (see the "
+    "morphProperties::MORPH_NAME doc comment) and cannot be read back through this accessor — the "
+    "SoA-reconstructed value would always be empty. Track MORPH_NAME on the caller side instead.");
+  validateMorphIndex(idx, "LvsMorph::getMorphProperty");
+  morphProperties props;
+  syncSoAProperties(props, idx, false);
+  return props.*field;
+}
+
+// ============================================================
+//  PRIVATE METHODS / HELPERS
+// ============================================================
+
+void LvsMorph::validateMorphIndex(int idx, const char* callerName) const {
+  if (idx < 0 || idx >= (int)m_MaxMorphs) {
+    throw std::runtime_error(cpc::Red + "[" + callerName + "] idx (" + std::to_string(idx) +
+      ") is out of range for the morph pool (valid range is 0 to " + std::to_string(m_MaxMorphs - 1) +
+      "). Fix: pass a valid SoA slot index returned by LvsMorph::morphObject()." + cpc::Reset);
+  }
+
+  bool isActive = std::find(soa.active_indices.begin(), soa.active_indices.end(), idx) != soa.active_indices.end();
+  if (!isActive) {
+    std::cerr << cpc::Yellow << "[" << callerName << "] idx (" << idx << ") is within range but is not a "
+      "currently active morph slot (it may have been freed, or morphObject() was never called for it). "
+      "The returned value will reflect stale or default data. Fix: verify idx was returned by a successful "
+      "morphObject() call and has not since been freed." << cpc::Reset << std::endl;
+  }
 }
 
 bool LvsMorph::checkMorphProperties(morphProperties &props, VertexList &verticesList) {
@@ -374,5 +414,26 @@ void LvsMorph::syncSoAProperties(morphProperties &props, int idx, bool writeToSo
 
   #undef SYNC_VAL
 }
+
+// ============================================================
+//  EXPLICIT TEMPLATE INSTANTIATIONS
+// ============================================================
+
+using EaseFn               = float(*)(float);       // MORPH_CUSTOM_EASE_FUNCTION, position_/color_/uv_custom_ease_function
+using VoidCallback         = void(*)(void*);         // on_morph_start, on_morph_complete
+using StepCompleteCallback = void(*)(int, void*);    // on_step_complete
+
+template LvsEasingFunctions::EaseType LvsMorph::getMorphProperty<LvsEasingFunctions::EaseType>(int, LvsEasingFunctions::EaseType LvsMorph::morphProperties::*);
+template EaseFn                      LvsMorph::getMorphProperty<EaseFn>(int, EaseFn LvsMorph::morphProperties::*);
+template bool                        LvsMorph::getMorphProperty<bool>(int, bool LvsMorph::morphProperties::*);
+template float                       LvsMorph::getMorphProperty<float>(int, float LvsMorph::morphProperties::*);
+template MorphSequenceMode           LvsMorph::getMorphProperty<MorphSequenceMode>(int, MorphSequenceMode LvsMorph::morphProperties::*);
+template int                         LvsMorph::getMorphProperty<int>(int, int LvsMorph::morphProperties::*);
+template MorphVertexMatchMode        LvsMorph::getMorphProperty<MorphVertexMatchMode>(int, MorphVertexMatchMode LvsMorph::morphProperties::*);
+template MorphState                  LvsMorph::getMorphProperty<MorphState>(int, MorphState LvsMorph::morphProperties::*);
+template void*                       LvsMorph::getMorphProperty<void*>(int, void* LvsMorph::morphProperties::*);
+template VoidCallback                LvsMorph::getMorphProperty<VoidCallback>(int, VoidCallback LvsMorph::morphProperties::*);
+template StepCompleteCallback        LvsMorph::getMorphProperty<StepCompleteCallback>(int, StepCompleteCallback LvsMorph::morphProperties::*);
+template uint32_t                    LvsMorph::getMorphProperty<uint32_t>(int, uint32_t LvsMorph::morphProperties::*);
 
 }

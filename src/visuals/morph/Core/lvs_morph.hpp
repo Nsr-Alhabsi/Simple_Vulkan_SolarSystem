@@ -241,6 +241,31 @@ public:
    */
   int morphObject(std::vector<std::vector<LvsModel::Vertex>> &verticesList, morphProperties &props);
 
+  /**
+   * @brief Reads every property of a registered morph back out of the SoA.
+   *
+   * @param idx SoA slot index previously returned by morphObject().
+   * @return    A morphProperties struct reconstructed from the SoA. MORPH_NAME is
+   *            always empty — it is not stored in the SoA (see its doc comment).
+   * @throws std::runtime_error if idx is out of range for the allocated pool.
+   */
+  morphProperties getMorphProperty(int idx);
+
+  /**
+   * @brief Reads a single field of a registered morph back out of the SoA.
+   *
+   * Explicit instantiations cover every field type on morphProperties except
+   * std::string (MORPH_NAME) — see the static_assert in the definition.
+   *
+   * @tparam T     Type of the field to retrieve.
+   * @param  idx   SoA slot index previously returned by morphObject().
+   * @param  field Pointer-to-member selecting which morphProperties field to read.
+   * @return       Current value of that field in the SoA.
+   * @throws std::runtime_error if idx is out of range for the allocated pool.
+   */
+  template<typename T>
+  T getMorphProperty(int idx, T morphProperties::* field);
+
 private:
   using VertexList = std::vector<std::vector<LvsModel::Vertex>>;
 
@@ -250,6 +275,14 @@ private:
 
   bool checkMorphProperties(morphProperties &props, VertexList &verticesList);
   void syncSoAProperties(morphProperties &props, int idx, bool writeToSoA = true);
+
+  // ------------------------------------------------------------
+  //  PRIVATE METHODS / HELPERS
+  // ------------------------------------------------------------
+
+  // Throws if idx is outside the allocated pool; warns (non-fatal) if idx is
+  // in range but not a currently active morph slot.
+  void validateMorphIndex(int idx, const char* callerName) const;
 
 };
 
