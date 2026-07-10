@@ -45,7 +45,7 @@ public:
    * @param device Vulkan device used for any GPU-side operations.
    */
   LvsEffectManager(LvsDevice& device)
-      : lvsDevice{device}, m_Rng{std::random_device{}()}, particleSystem{soa, particleSoa, m_Rng} {}
+      : m_Rng{std::random_device{}()}, lvsDevice{device}, particleSystem{soa, particleSoa, m_Rng} {}
 
   // ------------------------------------------------------------
   //  PUBLIC API
