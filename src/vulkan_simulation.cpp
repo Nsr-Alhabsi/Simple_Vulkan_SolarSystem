@@ -70,6 +70,7 @@ LvsEffects::effectProperties Simulation::getEffectProperties() {
 
 void Simulation::loadObjects() {
   effectManager.init(10, 1000);
+  morphManager.init(10);
 
   // SUN
   auto sun = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
@@ -145,6 +146,29 @@ void Simulation::loadObjects() {
   fx.particle_scale_end     = {0.005f, 0.005f};
   fx.repetition             = -1;
   effectManager.initializeEffect(fx);
+
+  // Demo morph: two same-vertex-count triangle shapes registered into the morph
+  // pool. Proves out the full LvsMorph pipeline (vertex validation, SoA slot
+  // allocation, property sync) end-to-end. Per-frame interpolation playback is
+  // not yet implemented, so this shape does not animate visually.
+  std::vector<LvsModel::Vertex> morphShapeA = {
+    {{0.0f, -0.5f}, {1.f, 1.f, 1.f}, {0.5f, 0.0f}},
+    {{-0.5f, 0.5f}, {1.f, 1.f, 1.f}, {0.0f, 1.0f}},
+    {{0.5f, 0.5f},  {1.f, 1.f, 1.f}, {1.0f, 1.0f}},
+  };
+  std::vector<LvsModel::Vertex> morphShapeB = {
+    {{0.0f, -0.2f}, {1.f, 1.f, 1.f}, {0.5f, 0.0f}},
+    {{-0.2f, 0.2f}, {1.f, 1.f, 1.f}, {0.0f, 1.0f}},
+    {{0.2f, 0.2f},  {1.f, 1.f, 1.f}, {1.0f, 1.0f}},
+  };
+  std::vector<std::vector<LvsModel::Vertex>> morphShapes = {morphShapeA, morphShapeB};
+
+  LvsMorph::morphProperties morphProps{};
+  morphProps.MORPH_NAME = "Demo_Triangle_Pulse";
+  morphProps.duration = 1.5f;
+  morphProps.repetition = -1;
+  morphProps.sequence_mode = MORPH_SEQUENCE_PING_PONG;
+  morphManager.morphObject(morphShapes, morphProps);
 }
 
 }

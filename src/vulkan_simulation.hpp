@@ -6,6 +6,7 @@
 #include "models/properties/lvs_game_animations.hpp"
 
 #include "visuals/effects/lvs_effect_manager.hpp"
+#include "visuals/morph/Core/lvs_morph.hpp"
 
 #include <nlohmann/json.hpp>
 #include <glm/gtc/constants.hpp>
@@ -57,6 +58,7 @@ private:
   LvsDevice lvsDevice{lvsWindow};
   LvsRenderer lvsRenderer{lvsWindow, lvsDevice};
   LvsEffectManager effectManager{lvsDevice};
+  LvsMorph morphManager;
 
   std::unordered_map<LvsGameObject::id_t, LvsGameObject> gameObjects;
 };
