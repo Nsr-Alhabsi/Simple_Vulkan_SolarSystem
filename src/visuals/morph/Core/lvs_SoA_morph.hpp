@@ -82,6 +82,8 @@ struct LvsSOAMorphs {
   std::unique_ptr<float[]>      morph_elapsed_delay_time;
   std::unique_ptr<int[]>        morph_current_from_index;
   std::unique_ptr<int[]>        morph_current_to_index;
+  /// @brief Interpolated vertex array currently applied to each morph's TARGET_OBJECT.
+  std::unique_ptr<std::vector<LvsModel::Vertex>[]> morph_current_vertices;
   std::unique_ptr<int[]>        morph_current_repetition;
   std::unique_ptr<float[]>      morph_loop_delay_remaining;
   std::unique_ptr<float[]>      morph_step_delay_remaining;

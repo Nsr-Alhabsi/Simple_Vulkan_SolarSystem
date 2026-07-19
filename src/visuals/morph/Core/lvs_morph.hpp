@@ -183,6 +183,12 @@ public:
     /// @note Set by the system at runtime. Do not write to this field manually.
     int current_to_index = 1;
 
+    /// @brief The exact interpolated vertex array currently applied to `TARGET_OBJECT` this frame —
+    /// i.e. the literal mesh "stage" the object is at mid-morph, as opposed to `current_from_index` /
+    /// `current_to_index` / `normalized_progress`, which only describe how that stage was reached.
+    /// @note Set by the system at runtime. Do not write to this field manually.
+    std::vector<LvsModel::Vertex> current_vertices;
+
     /// @brief Number of full sequence passes completed so far.
     /// @note Set by the system at runtime. Do not write to this field manually.
     int current_repetition = 0;

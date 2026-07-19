@@ -65,6 +65,7 @@ void LvsMorph::init(uint32_t count) {
   soa.morph_elapsed_delay_time    = std::make_unique<float[]>(count);
   soa.morph_current_from_index    = std::make_unique<int[]>(count);
   soa.morph_current_to_index      = std::make_unique<int[]>(count);
+  soa.morph_current_vertices      = std::make_unique<std::vector<LvsModel::Vertex>[]>(count);
   soa.morph_current_repetition    = std::make_unique<int[]>(count);
   soa.morph_loop_delay_remaining  = std::make_unique<float[]>(count);
   soa.morph_step_delay_remaining  = std::make_unique<float[]>(count);
@@ -411,6 +412,7 @@ void LvsMorph::syncSoAProperties(morphProperties &props, int idx, bool writeToSo
   SYNC_VAL(props.elapsed_delay_time,    soa.morph_elapsed_delay_time);
   SYNC_VAL(props.current_from_index,    soa.morph_current_from_index);
   SYNC_VAL(props.current_to_index,      soa.morph_current_to_index);
+  SYNC_VAL(props.current_vertices,      soa.morph_current_vertices);
   SYNC_VAL(props.current_repetition,    soa.morph_current_repetition);
   SYNC_VAL(props.loop_delay_remaining,  soa.morph_loop_delay_remaining);
   SYNC_VAL(props.step_delay_remaining,  soa.morph_step_delay_remaining);
@@ -437,6 +439,7 @@ using EaseFn               = float(*)(float);       // MORPH_CUSTOM_EASE_FUNCTIO
 using VoidCallback         = void(*)(void*);         // on_morph_start, on_morph_complete
 using StepCompleteCallback = void(*)(int, void*);    // on_step_complete
 
+template std::vector<LvsModel::Vertex> LvsMorph::getMorphProperty<std::vector<LvsModel::Vertex>>(int, std::vector<LvsModel::Vertex> LvsMorph::morphProperties::*);
 template LvsGameObject*               LvsMorph::getMorphProperty<LvsGameObject*>(int, LvsGameObject* LvsMorph::morphProperties::*);
 template LvsEasingFunctions::EaseType LvsMorph::getMorphProperty<LvsEasingFunctions::EaseType>(int, LvsEasingFunctions::EaseType LvsMorph::morphProperties::*);
 template EaseFn                      LvsMorph::getMorphProperty<EaseFn>(int, EaseFn LvsMorph::morphProperties::*);
