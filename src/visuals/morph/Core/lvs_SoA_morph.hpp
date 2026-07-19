@@ -6,6 +6,7 @@
 
 #include "lvs_morph_types.hpp"
 #include "../../../utils/easing_functions.hpp"
+#include "../../../models/lvs_game_object.hpp"
 
 // std:
 #include <memory>
@@ -37,6 +38,10 @@ struct LvsSOAMorphs {
   // NOTE: MORPH_NAME (std::string) is intentionally omitted — it exists only on
   // morphProperties for debugging and is never stored in the SoA.
   std::unique_ptr<bool[]> morph_active;
+
+  // --- Target ---
+  /// @brief Direct pointer to the LvsGameObject this morph slot writes interpolated vertex data into.
+  std::unique_ptr<LvsGameObject*[]> morph_target_object;
 
   // --- Core timing ---
   std::unique_ptr<float[]> morph_duration;

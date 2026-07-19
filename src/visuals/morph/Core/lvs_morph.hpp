@@ -5,6 +5,7 @@
 // ============================================================
 
 #include "../../../models/lvs_model.hpp"
+#include "../../../models/lvs_game_object.hpp"
 #include "../../../utils/easing_functions.hpp"
 
 #include "lvs_morph_types.hpp"
@@ -57,6 +58,15 @@ public:
 
     /// @brief When `false` the system skips this morph entirely each frame without freeing its slot.
     bool active = true;
+
+    /// @brief The real LvsGameObject this morph writes interpolated vertex data into.
+    /// @note Mirrors `LvsEffects::effectProperties::particle` — a direct pointer rather than an id_t
+    ///       lookup, so the object can be modified in real time with no per-frame world-map resolution.
+    ///       There is no default target: a morph with no object to modify has nothing to do, so
+    ///       `checkMorphProperties` rejects the default `nullptr` as a critical issue. The caller is
+    ///       responsible for keeping the pointed-to LvsGameObject alive for as long as the morph runs
+    ///       (e.g. by taking the address of an entry already stored in Simulation::gameObjects).
+    LvsGameObject* TARGET_OBJECT = nullptr;
 
     // --- Core timing ---
 

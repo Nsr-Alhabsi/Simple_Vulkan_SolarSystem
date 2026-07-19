@@ -23,6 +23,9 @@ void LvsMorph::init(uint32_t count) {
   soa.morph_MORPH_CUSTOM_EASE_FUNCTION = std::make_unique<float(*[])(float)>(count);
   soa.morph_active                     = std::make_unique<bool[]>(count);
 
+  // --- Target ---
+  soa.morph_target_object = std::make_unique<LvsGameObject*[]>(count);
+
   // --- Core timing ---
   soa.morph_duration             = std::make_unique<float[]>(count);
   soa.morph_duration_variance    = std::make_unique<float[]>(count);
@@ -148,6 +151,14 @@ bool LvsMorph::checkMorphProperties(morphProperties &props, VertexList &vertices
   std::vector<std::string> criticalIssues;
   std::vector<std::string> majorIssues;
   std::vector<std::string> minorIssues;
+
+  // --- Target ---
+  if (props.TARGET_OBJECT == nullptr) {
+    criticalIssues.push_back(
+      "props.TARGET_OBJECT is nullptr, which means no LvsGameObject has been named as the target of this morph "
+      "— there is no real object for the morph to write interpolated vertex data into. Fix: set "
+      "props.TARGET_OBJECT to the address of an existing LvsGameObject (e.g. &gameObjects.at(id)).");
+  }
 
   // --- verticesList structural checks ---
   if (verticesList.empty()) {
@@ -358,6 +369,9 @@ void LvsMorph::syncSoAProperties(morphProperties &props, int idx, bool writeToSo
   // NOTE: MORPH_NAME is intentionally not synced — it's struct-only, never stored in the SoA.
   SYNC_VAL(props.active, soa.morph_active);
 
+  // --- Target ---
+  SYNC_VAL(props.TARGET_OBJECT, soa.morph_target_object);
+
   // --- Core timing ---
   SYNC_VAL(props.duration,             soa.morph_duration);
   SYNC_VAL(props.duration_variance,    soa.morph_duration_variance);
@@ -423,6 +437,7 @@ using EaseFn               = float(*)(float);       // MORPH_CUSTOM_EASE_FUNCTIO
 using VoidCallback         = void(*)(void*);         // on_morph_start, on_morph_complete
 using StepCompleteCallback = void(*)(int, void*);    // on_step_complete
 
+template LvsGameObject*               LvsMorph::getMorphProperty<LvsGameObject*>(int, LvsGameObject* LvsMorph::morphProperties::*);
 template LvsEasingFunctions::EaseType LvsMorph::getMorphProperty<LvsEasingFunctions::EaseType>(int, LvsEasingFunctions::EaseType LvsMorph::morphProperties::*);
 template EaseFn                      LvsMorph::getMorphProperty<EaseFn>(int, EaseFn LvsMorph::morphProperties::*);
 template bool                        LvsMorph::getMorphProperty<bool>(int, bool LvsMorph::morphProperties::*);
