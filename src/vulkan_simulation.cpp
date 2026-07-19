@@ -163,8 +163,13 @@ void Simulation::loadObjects() {
   };
   std::vector<std::vector<LvsModel::Vertex>> morphShapes = {morphShapeA, morphShapeB};
 
+  auto morphTarget = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Custom, lvsDevice, &morphShapeA);
+  id_t morphTargetId = morphTarget.getId();
+  gameObjects.emplace(morphTargetId, std::move(morphTarget));
+
   LvsMorph::morphProperties morphProps{};
   morphProps.MORPH_NAME = "Demo_Triangle_Pulse";
+  morphProps.TARGET_OBJECT = &gameObjects.at(morphTargetId);
   morphProps.duration = 1.5f;
   morphProps.repetition = -1;
   morphProps.sequence_mode = MORPH_SEQUENCE_PING_PONG;
