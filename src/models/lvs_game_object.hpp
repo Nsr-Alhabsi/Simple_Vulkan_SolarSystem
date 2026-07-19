@@ -49,6 +49,19 @@ public:
 
   glm::mat3 getGlobalMatrix(std::unordered_map<unsigned int, LvsGameObject>& objectList);
 
+  /**
+   * @brief Updates this object's mesh; a no-op if `vertices` is identical to what's already uploaded.
+   *
+   * @warning Only valid for objects created with `ObjectType::Custom`. Circle/Triangle/Square
+   * instances share one static GPU model across every object of that type (see
+   * `createGameObject`) — mutating it here would corrupt every other object of that shape on
+   * screen. Fix: create the target via
+   * `createGameObject(ObjectType::Custom, device, &vertices)` instead.
+   *
+   * @return true if the GPU buffer was actually updated, false if unchanged or refused.
+   */
+  bool setVertices(const std::vector<LvsModel::Vertex> &vertices);
+
   LvsGameObject(const LvsGameObject &) = delete;
   LvsGameObject &operator=(const LvsGameObject &) = delete;
   LvsGameObject(LvsGameObject&&) = default;

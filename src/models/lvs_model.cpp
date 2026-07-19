@@ -12,14 +12,15 @@ LvsModel::LvsModel(LvsDevice &device, const std::vector<Vertex> &vertices) : lvs
 }
 
 LvsModel::~LvsModel() {
+  vkUnmapMemory(lvsDevice.device(), vertexBufferMemory);
   vkDestroyBuffer(lvsDevice.device(), vertexBuffer, nullptr);
   vkFreeMemory(lvsDevice.device(), vertexBufferMemory, nullptr);
 }
 
 void LvsModel::createVertexBuffers(const std::vector<Vertex> &vertices) {
   vertexCount = static_cast<uint32_t>(vertices.size());
-  
-  std::cout << cpc::Cyan << "Vertex count is: " << vertexCount << cpc::Reset << std::endl; 
+
+  std::cout << cpc::Cyan << "Vertex count is: " << vertexCount << cpc::Reset << std::endl;
   assert(vertexCount >= 3 && "Vertex count must be at least 3");
 
   VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
@@ -31,10 +32,39 @@ void LvsModel::createVertexBuffers(const std::vector<Vertex> &vertices) {
     vertexBufferMemory
   );
 
-  void *data;
-  vkMapMemory(lvsDevice.device(), vertexBufferMemory, 0, bufferSize, 0, &data);
-  memcpy(data, vertices.data(), static_cast<uint32_t>(bufferSize));
-  vkUnmapMemory(lvsDevice.device(), vertexBufferMemory);
+  // Mapped once and left mapped (memory is host-coherent, so no explicit flush is needed) so
+  // updateVertices() can overwrite it later with a plain memcpy instead of a map/unmap round trip.
+  vkMapMemory(lvsDevice.device(), vertexBufferMemory, 0, bufferSize, 0, &mappedVertexMemory);
+  memcpy(mappedVertexMemory, vertices.data(), static_cast<size_t>(bufferSize));
+
+  cachedVertices = vertices;
+}
+
+bool LvsModel::verticesEqual(const std::vector<Vertex> &a, const std::vector<Vertex> &b) {
+  if (a.size() != b.size()) return false;
+  for (size_t i = 0; i < a.size(); i++) {
+    if (a[i].position != b[i].position || a[i].color != b[i].color || a[i].uv != b[i].uv) return false;
+  }
+  return true;
+}
+
+bool LvsModel::updateVertices(const std::vector<Vertex> &vertices) {
+  if (verticesEqual(vertices, cachedVertices)) return false; // unchanged - skip all GPU work
+
+  if (vertices.size() != vertexCount) {
+    // Count changed: the existing buffer is the wrong size, so it must be reallocated.
+    vkUnmapMemory(lvsDevice.device(), vertexBufferMemory);
+    vkDestroyBuffer(lvsDevice.device(), vertexBuffer, nullptr);
+    vkFreeMemory(lvsDevice.device(), vertexBufferMemory, nullptr);
+    createVertexBuffers(vertices); // also refreshes cachedVertices
+    return true;
+  }
+
+  // Same count: reuse the existing persistently-mapped buffer, no reallocation needed.
+  VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
+  memcpy(mappedVertexMemory, vertices.data(), static_cast<size_t>(bufferSize));
+  cachedVertices = vertices;
+  return true;
 }
 
 void LvsModel::bind(VkCommandBuffer commandBuffer) {

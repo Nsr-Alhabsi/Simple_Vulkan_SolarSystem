@@ -2,6 +2,7 @@
 #include "../ADDONS/cp_color.hpp"
 
 // std:
+#include <iostream>
 #include <stdexcept>
 #include <unordered_map>
 
@@ -129,6 +130,21 @@ std::vector<LvsModel::Vertex> LvsGameObject::getObjectVertices(id_t id) {
   auto it = s_ObjectTypeMap.find(id);
   if (it == s_ObjectTypeMap.end()) return {};
   return createObjectVertices(it->second);
+}
+
+bool LvsGameObject::setVertices(const std::vector<LvsModel::Vertex> &vertices) {
+  if (!model) return false;
+
+  auto it = s_ObjectTypeMap.find(id);
+  if (it != s_ObjectTypeMap.end() && it->second != ObjectType::Custom) {
+    std::cerr << cpc::Red << "[LvsGameObject::setVertices] Refusing to modify object " << id
+      << ": it shares a static built-in model (Circle/Triangle/Square) with every other object of "
+      "that shape (see createGameObject). Fix: create this object via "
+      "createGameObject(ObjectType::Custom, device, &vertices) instead." << cpc::Reset << std::endl;
+    return false;
+  }
+
+  return model->updateVertices(vertices);
 }
 
 glm::mat3 LvsGameObject::getGlobalMatrix(std::unordered_map<id_t, LvsGameObject>& objectList) {
