@@ -172,7 +172,8 @@ void Simulation::loadObjects() {
   morphProps.TARGET_OBJECT = &gameObjects.at(morphTargetId);
   morphProps.duration = 1.5f;
   morphProps.repetition = -1;
-  morphProps.sequence_mode = MORPH_SEQUENCE_PING_PONG;
+  morphProps.sequence_mode = MORPH_SEQUENCE_FORWARD;
+  morphProps.reverse_on_finish = true;
   morphManager.morphObject(morphShapes, morphProps);
 }
 

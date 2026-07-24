@@ -12,7 +12,6 @@ namespace lvs {
 enum MorphSequenceMode {
   MORPH_SEQUENCE_FORWARD,    ///< @brief Advance 0 -> 1 -> 2 -> ... -> N.
   MORPH_SEQUENCE_REVERSE,    ///< @brief Advance N -> N-1 -> ... -> 0.
-  MORPH_SEQUENCE_PING_PONG,  ///< @brief Alternate 0->...->N->N-1->...->0 each repetition.
   MORPH_SEQUENCE_RANDOM      ///< @brief Jump to a random next shape each step (no immediate repeat).
 };
 

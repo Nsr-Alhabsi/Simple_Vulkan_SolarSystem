@@ -85,8 +85,8 @@ private:
   static bool advanceWithinPass(LvsMorph::morphProperties &props, int resolvedEnd, uint32_t effectiveSeed);
 
   // Resets current_from_index/current_to_index for the start of a fresh pass, honoring
-  // reverse_on_finish where applicable (ignored, with a warning, for PING_PONG and RANDOM —
-  // see the .cpp).
+  // reverse_on_finish for FORWARD/REVERSE (ignored for RANDOM, which has no notion of
+  // direction — see the .cpp).
   static void resetIndicesForNextPass(LvsMorph::morphProperties &props, int resolvedEnd, uint32_t effectiveSeed);
 
   // ------------------------------------------------------------

@@ -111,6 +111,9 @@ public:
     int repetition = 1;
 
     /// @brief When `true`, the sequence direction reverses after each completed pass instead of restarting.
+    /// @note This is the only direction-reversal mechanism `sequence_mode` offers — set this
+    ///       alongside `MORPH_SEQUENCE_FORWARD`/`MORPH_SEQUENCE_REVERSE` and `repetition > 1`
+    ///       (or `-1`) to get a back-and-forth "ping-pong"-style oscillation across repetitions.
     bool reverse_on_finish = false;
 
     /// @brief Seconds to wait between the end of one repetition and the start of the next.

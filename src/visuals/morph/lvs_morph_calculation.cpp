@@ -112,22 +112,8 @@ bool LvsMorphCalculation::advanceWithinPass(LvsMorph::morphProperties &props, in
   bool atFarBoundary = (dir > 0) ? (props.current_to_index == resolvedEnd)
                                  : (props.current_to_index == props.start_index);
 
-  if (props.sequence_mode == MORPH_SEQUENCE_PING_PONG) {
-    if (dir > 0 && atFarBoundary) {
-      // Outward leg done -- start the return leg; the pass (one full round trip) isn't over yet.
-      props.current_from_index = props.current_to_index;
-      props.current_to_index   = props.current_to_index - 1;
-      return false;
-    }
-    if (dir < 0 && atFarBoundary) {
-      return true; // return leg done -> whole round trip (this pass) exhausted
-    }
-    props.current_from_index = props.current_to_index;
-    props.current_to_index   = props.current_to_index + dir;
-    return false;
-  }
-
-  // FORWARD / REVERSE: single-leg passes.
+  // FORWARD / REVERSE: single-leg passes. Back-and-forth oscillation across repetitions is
+  // handled entirely by reverse_on_finish in resetIndicesForNextPass, not here.
   if (atFarBoundary) return true;
   props.current_from_index = props.current_to_index;
   props.current_to_index   = props.current_to_index + dir;
@@ -142,18 +128,8 @@ void LvsMorphCalculation::resetIndicesForNextPass(LvsMorph::morphProperties &pro
     return;
   }
 
-  if (props.sequence_mode == MORPH_SEQUENCE_PING_PONG) {
-    if (props.reverse_on_finish) {
-      std::cerr << cpc::Yellow << "[LvsMorphCalculation] reverse_on_finish is ignored for "
-        "MORPH_SEQUENCE_PING_PONG (ping-pong already owns direction reversal within a single "
-        "pass); set reverse_on_finish = false to silence this." << cpc::Reset << std::endl;
-    }
-    props.current_from_index = props.start_index;
-    props.current_to_index   = props.start_index + 1;
-    return;
-  }
-
-  // FORWARD / REVERSE: reverse_on_finish flips the base direction on alternating passes.
+  // FORWARD / REVERSE: reverse_on_finish flips the base direction on alternating passes —
+  // this is the only direction-reversal mechanism available now (see morphProperties::reverse_on_finish).
   bool baseForward = (props.sequence_mode == MORPH_SEQUENCE_FORWARD);
   bool nextForward = props.reverse_on_finish ? (baseForward == (props.current_repetition % 2 == 0)) : baseForward;
 
