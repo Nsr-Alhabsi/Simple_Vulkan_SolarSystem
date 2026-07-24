@@ -7,6 +7,7 @@
 
 #include "visuals/effects/lvs_effect_manager.hpp"
 #include "visuals/morph/Core/lvs_morph.hpp"
+#include "visuals/morph/lvs_morph_calculation.hpp"
 
 #include <nlohmann/json.hpp>
 #include <glm/gtc/constants.hpp>
@@ -59,6 +60,9 @@ private:
   LvsRenderer lvsRenderer{lvsWindow, lvsDevice};
   LvsEffectManager effectManager{lvsDevice};
   LvsMorph morphManager;
+  LvsMorphCalculation morphCalculator;
+  std::vector<std::vector<LvsModel::Vertex>> demoMorphShapes;
+  LvsMorph::morphProperties demoMorphProps;
 
   std::unordered_map<LvsGameObject::id_t, LvsGameObject> gameObjects;
 };

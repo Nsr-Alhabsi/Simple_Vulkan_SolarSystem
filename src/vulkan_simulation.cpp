@@ -55,6 +55,12 @@ void Simulation::run() {
 
     if (auto commandBuffer = lvsRenderer.beginFrame()) {
       effectManager.updateEffects(FrameInformation.deltaFrameTime);
+
+      morphCalculator.calculateMorph(demoMorphShapes, demoMorphProps, FrameInformation.deltaFrameTime);
+      if (demoMorphProps.TARGET_OBJECT) {
+        demoMorphProps.TARGET_OBJECT->setVertices(demoMorphProps.current_vertices);
+      }
+
       lvsRenderer.beginSwapChainRenderPass(commandBuffer);
       simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects);
       simpleRenderSystem.renderParticles(commandBuffer, effectManager);
@@ -147,10 +153,11 @@ void Simulation::loadObjects() {
   fx.repetition             = -1;
   effectManager.initializeEffect(fx);
 
-  // Demo morph: two same-vertex-count triangle shapes registered into the morph
-  // pool. Proves out the full LvsMorph pipeline (vertex validation, SoA slot
-  // allocation, property sync) end-to-end. Per-frame interpolation playback is
-  // not yet implemented, so this shape does not animate visually.
+  // Demo morph: two same-vertex-count triangle shapes registered into the morph pool (proves
+  // out validation/SoA registration) and also driven directly each frame in run() via
+  // morphCalculator.calculateMorph(), since LvsMorph's SoA doesn't yet retain a per-slot
+  // verticesList to drive playback through the pool itself. demoMorphShapes/demoMorphProps
+  // are Simulation members (not locals) so they survive past this function into run().
   std::vector<LvsModel::Vertex> morphShapeA = {
     {{0.0f, -0.5f}, {1.f, 1.f, 1.f}, {0.5f, 0.0f}},
     {{-0.5f, 0.5f}, {1.f, 1.f, 1.f}, {0.0f, 1.0f}},
@@ -161,20 +168,20 @@ void Simulation::loadObjects() {
     {{-0.2f, 0.2f}, {1.f, 1.f, 1.f}, {0.0f, 1.0f}},
     {{0.2f, 0.2f},  {1.f, 1.f, 1.f}, {1.0f, 1.0f}},
   };
-  std::vector<std::vector<LvsModel::Vertex>> morphShapes = {morphShapeA, morphShapeB};
+  demoMorphShapes = {morphShapeA, morphShapeB};
 
   auto morphTarget = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Custom, lvsDevice, &morphShapeA);
   id_t morphTargetId = morphTarget.getId();
   gameObjects.emplace(morphTargetId, std::move(morphTarget));
 
-  LvsMorph::morphProperties morphProps{};
-  morphProps.MORPH_NAME = "Demo_Triangle_Pulse";
-  morphProps.TARGET_OBJECT = &gameObjects.at(morphTargetId);
-  morphProps.duration = 1.5f;
-  morphProps.repetition = -1;
-  morphProps.sequence_mode = MORPH_SEQUENCE_FORWARD;
-  morphProps.reverse_on_finish = true;
-  morphManager.morphObject(morphShapes, morphProps);
+  demoMorphProps = LvsMorph::morphProperties{};
+  demoMorphProps.MORPH_NAME = "Demo_Triangle_Pulse";
+  demoMorphProps.TARGET_OBJECT = &gameObjects.at(morphTargetId);
+  demoMorphProps.duration = 1.5f;
+  demoMorphProps.repetition = -1;
+  demoMorphProps.sequence_mode = MORPH_SEQUENCE_FORWARD;
+  demoMorphProps.reverse_on_finish = true;
+  morphManager.morphObject(demoMorphShapes, demoMorphProps);
 }
 
 }
