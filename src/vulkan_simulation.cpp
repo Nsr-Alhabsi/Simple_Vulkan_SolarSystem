@@ -56,9 +56,9 @@ void Simulation::run() {
     if (auto commandBuffer = lvsRenderer.beginFrame()) {
       effectManager.updateEffects(FrameInformation.deltaFrameTime);
 
-      morphCalculator.calculateMorph(demoMorphShapes, demoMorphProps, FrameInformation.deltaFrameTime);
-      if (demoMorphProps.TARGET_OBJECT) {
-        demoMorphProps.TARGET_OBJECT->setVertices(demoMorphProps.current_vertices);
+      morphCalculator.calculateMorph(emberMorphShapes, emberMorphProps, FrameInformation.deltaFrameTime);
+      if (emberMorphProps.TARGET_OBJECT) {
+        emberMorphProps.TARGET_OBJECT->setVertices(emberMorphProps.current_vertices);
       }
 
       lvsRenderer.beginSwapChainRenderPass(commandBuffer);
@@ -126,13 +126,72 @@ void Simulation::loadObjects() {
   gameObjects.emplace(planetId, std::move(planet));
   gameObjects.emplace(moonId, std::move(moon));
 
-  auto particleTemplate = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Circle, lvsDevice);
-  particleTemplate.transform2D.scale       = {0.015f, 0.015f};
+  // Ember particle shape: a small circle-fan (same construction as the built-in Circle model —
+  // see LvsGameObject::createObjectVertices case 0 — but as its own ObjectType::Custom mesh, not
+  // the shared Circle singleton every other Circle object uses). It has to be Custom: setVertices
+  // refuses to touch built-in Circle/Triangle/Square objects specifically because they share one
+  // static model across the whole scene, and mutating it would deform the sun/planet/moon too.
+  //
+  // UV is derived from position the same way createObjectVertices does it (uv = pos*0.5+0.5),
+  // which is what makes the Circle model render as a full, unclipped disk against
+  // simple_shader.frag's "discard if UV distance from center > 0.5" rule. Keeping that same
+  // relationship for the wobbly variant (radius never exceeds 1.0) means the wobble never gets
+  // clipped either — it reads as a soft, organic pulsing blob rather than an artifact.
+  auto makeEmberShape = [](int segments, auto radiusFn) {
+    std::vector<LvsModel::Vertex> verts;
+    verts.reserve(static_cast<size_t>(segments) * 3);
+    const float angleStep = glm::two_pi<float>() / static_cast<float>(segments);
+    for (int i = 0; i < segments; i++) {
+      float a1 = static_cast<float>(i) * angleStep;
+      float a2 = static_cast<float>(i + 1) * angleStep;
+      float r1 = radiusFn(a1);
+      float r2 = radiusFn(a2);
+      glm::vec2 p0 = {0.0f, 0.0f};
+      glm::vec2 p1 = {r1 * glm::cos(a1), r1 * glm::sin(a1)};
+      glm::vec2 p2 = {r2 * glm::cos(a2), r2 * glm::sin(a2)};
+      auto getUV = [](glm::vec2 p) { return p * 0.5f + 0.5f; };
+      verts.push_back({p0, {1.f, 1.f, 1.f}, getUV(p0)});
+      verts.push_back({p2, {1.f, 1.f, 1.f}, getUV(p2)});
+      verts.push_back({p1, {1.f, 1.f, 1.f}, getUV(p1)});
+    }
+    return verts;
+  };
+
+  // Shape A: a plain circle (radius 1.0 all the way around, matching the built-in Circle model).
+  std::vector<LvsModel::Vertex> emberShapeA = makeEmberShape(24, [](float) { return 1.0f; });
+  // Shape B: the same circle with a 4-lobed inward wobble (radius dips to 0.68 at its narrowest)
+  // — never exceeds 1.0, so it stays inside the built-in model's original silhouette and never
+  // gets clipped. The dip has to be this large (not the originally-tried 0.88) because these
+  // particles render at only ~10-15px on screen: a 12%-radius wobble there is sub-pixel and
+  // invisible, even though it's clearly visible on a larger test shape at the same relative
+  // amplitude — the effect has to be tuned against actual on-screen particle size, not just the
+  // shape's own local unit circle.
+  std::vector<LvsModel::Vertex> emberShapeB = makeEmberShape(24, [](float a) {
+    return 1.0f - 0.32f * (0.5f + 0.5f * glm::sin(4.0f * a));
+  });
+
+  auto particleTemplate = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Custom, lvsDevice, &emberShapeA);
+  particleTemplate.transform2D.scale       = {0.022f, 0.022f}; // slightly larger than before so the wobble has more pixels to read in
   particleTemplate.transform2D.translation = {0.f, 0.f};
+  particleTemplate.transform2D.rotation    = 0.0f; // Transform2DComponent::rotation has no default initializer
   particleTemplate.color = {1.f, 0.8f, 0.f};
   particleTemplate.visible = false;
   id_t particleTemplateId = particleTemplate.getId();
   gameObjects.emplace(particleTemplateId, std::move(particleTemplate));
+
+  emberMorphShapes = {emberShapeA, emberShapeB};
+  emberMorphProps = LvsMorph::morphProperties{};
+  emberMorphProps.MORPH_NAME = "Ember_Shimmer";
+  emberMorphProps.TARGET_OBJECT = &gameObjects.at(particleTemplateId);
+  emberMorphProps.duration = 0.22f; // fast enough to read as a flicker, not a slow breathing pulse
+  emberMorphProps.repetition = -1;
+  emberMorphProps.sequence_mode = MORPH_SEQUENCE_FORWARD;
+  emberMorphProps.reverse_on_finish = true; // bounces circle <-> wobble <-> circle continuously
+  emberMorphProps.morph_vertex_uvs = true;  // keep uv = pos*0.5+0.5 exact at every mid-morph frame
+  // position_ease and uv_ease must stay equal (both LINEAR by default here) so posT == uvT at
+  // every tick — that's what keeps uv = pos*0.5+0.5 exact through the whole interpolation and
+  // avoids clipping artifacts mid-wobble (see calculateMorph's posT/uvT split).
+  morphManager.morphObject(emberMorphShapes, emberMorphProps);
 
   LvsEffects::effectProperties fx{};
   fx.particle               = &gameObjects.at(particleTemplateId);
@@ -152,36 +211,6 @@ void Simulation::loadObjects() {
   fx.particle_scale_end     = {0.005f, 0.005f};
   fx.repetition             = -1;
   effectManager.initializeEffect(fx);
-
-  // Demo morph: two same-vertex-count triangle shapes registered into the morph pool (proves
-  // out validation/SoA registration) and also driven directly each frame in run() via
-  // morphCalculator.calculateMorph(), since LvsMorph's SoA doesn't yet retain a per-slot
-  // verticesList to drive playback through the pool itself. demoMorphShapes/demoMorphProps
-  // are Simulation members (not locals) so they survive past this function into run().
-  std::vector<LvsModel::Vertex> morphShapeA = {
-    {{0.0f, -0.5f}, {1.f, 1.f, 1.f}, {0.5f, 0.0f}},
-    {{-0.5f, 0.5f}, {1.f, 1.f, 1.f}, {0.0f, 1.0f}},
-    {{0.5f, 0.5f},  {1.f, 1.f, 1.f}, {1.0f, 1.0f}},
-  };
-  std::vector<LvsModel::Vertex> morphShapeB = {
-    {{0.0f, -0.2f}, {1.f, 1.f, 1.f}, {0.5f, 0.0f}},
-    {{-0.2f, 0.2f}, {1.f, 1.f, 1.f}, {0.0f, 1.0f}},
-    {{0.2f, 0.2f},  {1.f, 1.f, 1.f}, {1.0f, 1.0f}},
-  };
-  demoMorphShapes = {morphShapeA, morphShapeB};
-
-  auto morphTarget = LvsGameObject::createGameObject(LvsGameObject::ObjectType::Custom, lvsDevice, &morphShapeA);
-  id_t morphTargetId = morphTarget.getId();
-  gameObjects.emplace(morphTargetId, std::move(morphTarget));
-
-  demoMorphProps = LvsMorph::morphProperties{};
-  demoMorphProps.MORPH_NAME = "Demo_Triangle_Pulse";
-  demoMorphProps.TARGET_OBJECT = &gameObjects.at(morphTargetId);
-  demoMorphProps.duration = 1.5f;
-  demoMorphProps.repetition = -1;
-  demoMorphProps.sequence_mode = MORPH_SEQUENCE_FORWARD;
-  demoMorphProps.reverse_on_finish = true;
-  morphManager.morphObject(demoMorphShapes, demoMorphProps);
 }
 
 }

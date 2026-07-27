@@ -61,8 +61,15 @@ private:
   LvsEffectManager effectManager{lvsDevice};
   LvsMorph morphManager;
   LvsMorphCalculation morphCalculator;
-  std::vector<std::vector<LvsModel::Vertex>> demoMorphShapes;
-  LvsMorph::morphProperties demoMorphProps;
+  // Drives a continuous shape wobble on the sun's ember particle template. Since every
+  // particle spawned from an effect shares one LvsGameObject::model (see effectProperties in
+  // lvs_effects.hpp), this morph is NOT per-particle — all currently-alive embers display the
+  // exact same wobble in perfect sync at every instant, layered on top of each particle's own
+  // independent position/scale/color/opacity. There is no way to give individual particles their
+  // own independent morph without each owning a dedicated vertex buffer, which the shared-model
+  // draw-N-times-with-push-constants architecture doesn't support.
+  std::vector<std::vector<LvsModel::Vertex>> emberMorphShapes;
+  LvsMorph::morphProperties emberMorphProps;
 
   std::unordered_map<LvsGameObject::id_t, LvsGameObject> gameObjects;
 };
